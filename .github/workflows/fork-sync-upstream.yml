@@ -1,0 +1,214 @@
+# 每天自动把 model-acl 分支 rebase 到上游最新版本。
+#
+# 安全设计：模型分配功能绝不能被上游更新静默破坏，所以只有
+# 「rebase 干净」+「编译通过」+「测试通过」三者全部满足才推送。
+# 任何一步失败就开 issue 告警并保持分支原样，等人工处理。
+#
+# 这意味着最坏情况是「同步没做」，而不是「功能坏了还推上去了」。
+name: fork-sync-upstream
+
+on:
+  schedule:
+    # 01:07 UTC = 北京时间 09:07。避开整点——整点是 GitHub Actions 的高峰，
+    # 排队会更久。
+    - cron: '7 1 * * *'
+  workflow_dispatch:
+    inputs:
+      upstream_ref:
+        description: '要同步到的上游 ref（默认 upstream/main）'
+        required: false
+        default: ''
+
+permissions:
+  contents: write
+  issues: write
+
+concurrency:
+  group: fork-sync-upstream
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout model-acl with full history
+        uses: actions/checkout@v4
+        with:
+          ref: model-acl
+          # rebase 需要完整历史，浅克隆会失败
+          fetch-depth: 0
+
+      - name: Add upstream remote
+        run: |
+          git remote add upstream https://github.com/router-for-me/CLIProxyAPI.git
+          git fetch upstream main --tags
+
+      - name: Check whether upstream moved
+        id: check
+        run: |
+          TARGET="${{ github.event.inputs.upstream_ref }}"
+          if [ -z "$TARGET" ]; then TARGET="upstream/main"; fi
+          UPSTREAM_SHA=$(git rev-parse "$TARGET")
+
+          # 我们的改动都在上游之上，所以 merge-base 就是当前所基于的上游 commit
+          BASE_SHA=$(git merge-base HEAD "$TARGET")
+
+          echo "upstream_sha=$UPSTREAM_SHA" >> "$GITHUB_OUTPUT"
+          echo "base_sha=$BASE_SHA" >> "$GITHUB_OUTPUT"
+          echo "target=$TARGET" >> "$GITHUB_OUTPUT"
+
+          if [ "$UPSTREAM_SHA" = "$BASE_SHA" ]; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            echo "已是最新：$BASE_SHA"
+          else
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+            echo "上游有更新：$BASE_SHA -> $UPSTREAM_SHA"
+            git log --oneline "$BASE_SHA..$UPSTREAM_SHA" | head -30
+          fi
+
+      - name: Nothing to do
+        if: steps.check.outputs.changed == 'false'
+        run: echo "上游无更新，跳过。"
+
+      # ---- 以下步骤仅在上游有更新时执行 ----
+
+      - name: Rebase our commits onto upstream
+        id: rebase
+        if: steps.check.outputs.changed == 'true'
+        run: |
+          git config user.name  'github-actions[bot]'
+          git config user.email 'github-actions[bot]@users.noreply.github.com'
+
+          # 记录 rebase 前我们有哪些 commit，用于事后校验一个都没丢
+          git log --format='%s' "${{ steps.check.outputs.base_sha }}..HEAD" > /tmp/our-commits.txt
+          echo "本 fork 的改动 commit："
+          cat /tmp/our-commits.txt
+
+          if git rebase "${{ steps.check.outputs.target }}"; then
+            echo "result=ok" >> "$GITHUB_OUTPUT"
+          else
+            # 冲突了：彻底还原，不留中间状态
+            git rebase --abort || true
+            echo "result=conflict" >> "$GITHUB_OUTPUT"
+            exit 1
+          fi
+
+      - name: Verify our changes survived the rebase
+        if: steps.check.outputs.changed == 'true'
+        run: |
+          # rebase 理论上不会丢 commit，但上游若把相同改动合并进去，
+          # 我们的 commit 可能被判定为空而被丢弃 —— 那会导致功能静默消失。
+          fail=0
+          while IFS= read -r subject; do
+            if ! git log --format='%s' "${{ steps.check.outputs.upstream_sha }}..HEAD" | grep -Fqx "$subject"; then
+              echo "::error::rebase 后丢失 commit: $subject"
+              fail=1
+            fi
+          done < /tmp/our-commits.txt
+
+          # 再直接检查关键代码是否还在，防止 commit 在但内容被上游覆盖
+          for marker in \
+            'ModelACL ModelACL' \
+            'func ExtractModelACL' \
+            'func ModelACLMiddleware' \
+            'func ModelListACLMiddleware'
+          do
+            if ! grep -rqF "$marker" internal/; then
+              echo "::error::关键实现缺失: $marker"
+              fail=1
+            fi
+          done
+
+          # 路由挂载点必须齐全：4 个请求拦截 + 2 个清单裁剪
+          acl_count=$(grep -c 'ModelACLMiddleware(s.cfg)' internal/api/server_routes.go || true)
+          list_count=$(grep -c 'ModelListACLMiddleware(s.cfg)' internal/api/server_routes.go || true)
+          echo "路由挂载：ModelACLMiddleware=$acl_count（应为 4） ModelListACLMiddleware=$list_count（应为 2）"
+          if [ "$acl_count" -ne 4 ] || [ "$list_count" -ne 2 ]; then
+            echo "::error::路由挂载点数量不符，上游可能重写了路由注册段"
+            fail=1
+          fi
+
+          exit $fail
+
+      - name: Set up Go
+        if: steps.check.outputs.changed == 'true'
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+          cache: true
+
+      - name: Build
+        if: steps.check.outputs.changed == 'true'
+        run: go build -o /tmp/cliproxyapi ./cmd/server
+
+      - name: Test
+        if: steps.check.outputs.changed == 'true'
+        run: |
+          go test ./internal/config/ ./internal/api/
+          go vet ./internal/config/ ./internal/api/
+
+      - name: Push the rebased branch
+        if: steps.check.outputs.changed == 'true'
+        run: |
+          # rebase 改写了历史，必须 force。用 --force-with-lease 避免覆盖
+          # 期间可能出现的其他推送。
+          git push --force-with-lease origin model-acl
+          echo "已同步到 ${{ steps.check.outputs.upstream_sha }}"
+
+      - name: Report success
+        if: steps.check.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          UP="${{ steps.check.outputs.upstream_sha }}"
+          gh issue list --repo "$GITHUB_REPOSITORY" --label fork-sync --state open \
+            --json number --jq '.[].number' | while read -r n; do
+              gh issue close "$n" --repo "$GITHUB_REPOSITORY" \
+                --comment "已成功同步到 ${UP}，此告警自动关闭。"
+            done
+
+      # ---- 失败告警：开 issue 而不是静默失败 ----
+
+      - name: Open an issue on failure
+        if: failure() && steps.check.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          UP="${{ steps.check.outputs.upstream_sha }}"
+          BASE="${{ steps.check.outputs.base_sha }}"
+          RUN="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+
+          # 已有未关闭的同类 issue 就只追加评论，避免每天刷一个新 issue
+          EXISTING=$(gh issue list --repo "$GITHUB_REPOSITORY" --label fork-sync \
+            --state open --json number --jq '.[0].number // empty')
+
+          BODY=$(cat <<EOF
+          自动同步上游失败，\`model-acl\` 分支**保持原样未改动**，模型分配功能不受影响。
+
+          | 项 | 值 |
+          | --- | --- |
+          | 当前基于 | \`${BASE}\` |
+          | 上游最新 | \`${UP}\` |
+          | 运行日志 | ${RUN} |
+
+          可能原因：上游改动与本 fork 的 26 行插入冲突，或 rebase 后编译/测试失败。
+
+          手动处理：
+
+          \`\`\`bash
+          cd /c/Users/Chan/Desktop/SSH/cpa
+          git fetch origin && git rebase origin/main
+          # 解决冲突后，对照 MODEL_ACL.md 末尾的检查清单确认 5 个挂载点都还在
+          git push --force-with-lease fork model-acl
+          \`\`\`
+          EOF
+          )
+
+          if [ -n "$EXISTING" ]; then
+            gh issue comment "$EXISTING" --repo "$GITHUB_REPOSITORY" --body "$BODY"
+          else
+            gh issue create --repo "$GITHUB_REPOSITORY" \
+              --title "自动同步上游失败：需要人工 rebase" \
+              --label fork-sync \
+              --body "$BODY"
+          fi
