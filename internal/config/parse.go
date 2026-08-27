@@ -38,9 +38,15 @@ func ParseConfigBytes(data []byte) (*Config, error) {
 	cfg.RemoteManagement.PanelGitHubRepository = DefaultPanelGitHubRepository
 	cfg.CredentialInFlight = DefaultCredentialInFlightConfig()
 
+	// Fork: see ExtractModelACL — pulls per-key model allow-lists out of api-keys.
+	modelACL, data, errACL := ExtractModelACL(data)
+	if errACL != nil {
+		return nil, fmt.Errorf("parse config payload: %w", errACL)
+	}
 	if err := yaml.Unmarshal(data, &cfg); err != nil {
 		return nil, fmt.Errorf("parse config payload: %w", err)
 	}
+	cfg.ModelACL = modelACL
 
 	cfg.CredentialConcurrency = cfg.CredentialConcurrency.WithDefaults()
 	if errValidate := cfg.CredentialInFlight.Validate(); errValidate != nil {

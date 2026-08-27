@@ -54,6 +54,12 @@ type SDKConfig struct {
 	// APIKeys is a list of keys for authenticating clients to this proxy server.
 	APIKeys []string `yaml:"api-keys" json:"api-keys"`
 
+	// ModelACL restricts which models an inbound api-key may list and call.
+	// Fork addition; populated by ExtractModelACL during config load from the
+	// object form of api-keys entries. Keys absent from the map are
+	// unrestricted, so an unmodified config behaves exactly like upstream.
+	ModelACL ModelACL `yaml:"-" json:"-"`
+
 	// PassthroughHeaders controls whether upstream response headers are forwarded to downstream clients.
 	// Default is false (disabled).
 	PassthroughHeaders bool `yaml:"passthrough-headers" json:"passthrough-headers"`

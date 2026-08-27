@@ -78,6 +78,12 @@ func LoadConfigOptional(configFile string, optional bool) (*Config, error) {
 	cfg.Pprof.Addr = DefaultPprofAddr
 	cfg.RemoteManagement.PanelGitHubRepository = DefaultPanelGitHubRepository
 	cfg.CredentialInFlight = DefaultCredentialInFlightConfig()
+	// Fork: lift per-key model allow-lists out of api-keys before the main
+	// unmarshal, which rewrites that section to the plain []string upstream expects.
+	modelACL, data, errACL := ExtractModelACL(data)
+	if errACL != nil && !optional {
+		return nil, fmt.Errorf("failed to parse config file: %w", errACL)
+	}
 	if err = yaml.Unmarshal(data, &cfg); err != nil {
 		if optional {
 			// In cloud deploy mode, if YAML parsing fails, return empty config instead of error.
@@ -87,6 +93,8 @@ func LoadConfigOptional(configFile string, optional bool) (*Config, error) {
 		}
 		return nil, fmt.Errorf("failed to parse config file: %w", err)
 	}
+
+	cfg.ModelACL = modelACL
 
 	cfg.CredentialConcurrency = cfg.CredentialConcurrency.WithDefaults()
 	if errValidate := cfg.CredentialInFlight.Validate(); errValidate != nil {
