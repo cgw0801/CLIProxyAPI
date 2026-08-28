@@ -110,8 +110,12 @@ jobs:
           for marker in \
             'ModelACL ModelACL' \
             'func ExtractModelACL' \
-            'func ModelACLMiddleware' \
-            'func ModelListACLMiddleware'
+            'func DynamicModelACLMiddleware' \
+            'func DynamicModelListACLMiddleware' \
+            'func (h *Handler) GetModelACL' \
+            'func (h *Handler) PutModelACL' \
+            'func restoreModelACLAPIKeys' \
+            'func injectModelACLShortcut'
           do
             if ! grep -rqF "$marker" internal/; then
               echo "::error::关键实现缺失: $marker"
@@ -120,13 +124,31 @@ jobs:
           done
 
           # 路由挂载点必须齐全：4 个请求拦截 + 2 个清单裁剪
-          acl_count=$(grep -c 'ModelACLMiddleware(s.cfg)' internal/api/server_routes.go || true)
-          list_count=$(grep -c 'ModelListACLMiddleware(s.cfg)' internal/api/server_routes.go || true)
-          echo "路由挂载：ModelACLMiddleware=$acl_count（应为 4） ModelListACLMiddleware=$list_count（应为 2）"
+          acl_count=$(grep -c 'DynamicModelACLMiddleware(func()' internal/api/server_routes.go || true)
+          list_count=$(grep -c 'DynamicModelListACLMiddleware(func()' internal/api/server_routes.go || true)
+          management_count=$(grep -c '"/model-acl"' internal/api/server_management.go || true)
+          page_count=$(grep -c '"/model-acl.html"' internal/api/server_routes.go || true)
+          echo "路由挂载：DynamicModelACLMiddleware=$acl_count（应为 4） DynamicModelListACLMiddleware=$list_count（应为 2） Management=$management_count（应为 2） Page=$page_count（应为 1）"
           if [ "$acl_count" -ne 4 ] || [ "$list_count" -ne 2 ]; then
             echo "::error::路由挂载点数量不符，上游可能重写了路由注册段"
             fail=1
           fi
+          if [ "$management_count" -ne 2 ] || [ "$page_count" -ne 1 ]; then
+            echo "::error::模型分配管理 API 或页面路由缺失"
+            fail=1
+          fi
+
+          # 页面入口必须默认隐藏，并且只在管理后台完成认证后出现。
+          for marker in \
+            'style="display:none;position:fixed' \
+            'root.querySelector(".sidebar")' \
+            'new MutationObserver(syncShortcut)'
+          do
+            if ! grep -qF "$marker" internal/api/model_acl_page.go; then
+              echo "::error::模型分配入口登录态保护缺失: $marker"
+              fail=1
+            fi
+          done
 
           exit $fail
 
@@ -144,8 +166,8 @@ jobs:
       - name: Test
         if: steps.check.outputs.changed == 'true'
         run: |
-          go test ./internal/config/ ./internal/api/
-          go vet ./internal/config/ ./internal/api/
+          go test ./internal/config/ ./internal/api/handlers/management/ ./internal/api/
+          go vet ./internal/config/ ./internal/api/handlers/management/ ./internal/api/
 
       - name: Push the rebased branch
         if: steps.check.outputs.changed == 'true'
@@ -191,15 +213,16 @@ jobs:
           | 上游最新 | \`${UP}\` |
           | 运行日志 | ${RUN} |
 
-          可能原因：上游改动与本 fork 的 26 行插入冲突，或 rebase 后编译/测试失败。
+          可能原因：上游改动与本 fork 的接入点冲突，或 rebase 后编译/测试失败。
 
           手动处理：
 
           \`\`\`bash
-          cd /c/Users/Chan/Desktop/SSH/cpa
-          git fetch origin && git rebase origin/main
-          # 解决冲突后，对照 MODEL_ACL.md 末尾的检查清单确认 5 个挂载点都还在
-          git push --force-with-lease fork model-acl
+          git fetch upstream main
+          git switch model-acl
+          git rebase upstream/main
+          # 解决冲突后，对照 MODEL_ACL.md 末尾的检查清单确认全部接入点都还在
+          git push --force-with-lease origin model-acl
           \`\`\`
           EOF
           )
