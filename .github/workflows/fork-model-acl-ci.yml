@@ -32,10 +32,10 @@ jobs:
         run: go build -o /tmp/cliproxyapi ./cmd/server
 
       - name: Test the ACL logic
-        run: go test ./internal/config/ -run 'ModelACL|Allowed|ClaudeDialect|ThinkingSuffix' -v
+        run: go test ./internal/config/ ./internal/api/handlers/management/ ./internal/api/ -run 'ModelACL|Allowed|ClaudeDialect|ThinkingSuffix|InjectModelACLShortcut' -v
 
       - name: Test the packages we touched
-        run: go test ./internal/config/ ./internal/api/
+        run: go test ./internal/config/ ./internal/api/handlers/management/ ./internal/api/
 
       - name: Vet
-        run: go vet ./internal/config/ ./internal/api/
+        run: go vet ./internal/config/ ./internal/api/handlers/management/ ./internal/api/
