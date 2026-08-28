@@ -1,0 +1,41 @@
+# Fork CI — verifies the per-key model ACL additions build and pass tests.
+#
+# Upstream's pr-test-build.yml only runs on pull_request, so pushing the
+# model-acl branch would otherwise go unverified. This runs on push to that
+# branch, which also means every rebase onto a new upstream release gets
+# checked automatically.
+name: fork-model-acl-ci
+
+on:
+  push:
+    branches:
+      - model-acl
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+          cache: true
+
+      - name: Build server
+        run: go build -o /tmp/cliproxyapi ./cmd/server
+
+      - name: Test the ACL logic
+        run: go test ./internal/config/ -run 'ModelACL|Allowed|ClaudeDialect|ThinkingSuffix' -v
+
+      - name: Test the packages we touched
+        run: go test ./internal/config/ ./internal/api/
+
+      - name: Vet
+        run: go vet ./internal/config/ ./internal/api/
