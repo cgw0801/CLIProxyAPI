@@ -29,6 +29,19 @@ api-keys:
 
 模型名写**原始名称**（`/v1/models` 里 OpenAI 方言返回的那个），不用管各方言的改写形式。
 
+## 管理界面
+
+先登录 `/management.html`，登录成功后右下角才会出现“模型分配”按钮。登录页不会显示入口，
+退出管理后台后入口也会立即隐藏。模型分配页为 `/model-acl.html`。
+
+页面通过已有的 management secret 调用以下接口：
+
+- `GET /v0/management/model-acl`：读取 API Key、分配关系和当前可用模型。
+- `PUT /v0/management/model-acl`：保存完整分配并触发配置热更新。
+
+可在页面中切换“全部模型”或“仅指定模型”，并支持搜索、批量勾选和手动填写模型 ID。
+保存后立即生效，不需要重启服务。
+
 ## 行为
 
 | 场景 | 结果 |
@@ -38,6 +51,7 @@ api-keys:
 | 受限 key 调用白名单外模型 | **404** `The model ... does not exist or you do not have access to it.` |
 | 未配置 `models` 的 key | 不受限制 |
 | 配置里没有任何受限 key | 中间件短路，零开销 |
+| 管理后台登录页 | 不显示“模型分配”入口 |
 
 用 404 而非 403 是有意的：403 会确认"模型存在但你没权限"，让调用方可以枚举出完整模型列表；
 404 则让受限 key 无法区分"没这个模型"和"不给你用"。
@@ -60,16 +74,24 @@ management secret，不是入站 key。
 | `internal/config/model_acl.go` | 解析 api-keys 的两种形态、白名单判定 |
 | `internal/config/model_acl_test.go` | 单元测试 |
 | `internal/api/model_acl_middleware.go` | 请求拦截 + 模型清单裁剪 |
+| `internal/api/handlers/management/config_model_acl.go` | 模型分配管理 API 与 Key 协调逻辑 |
+| `internal/api/handlers/management/config_model_acl_test.go` | 管理 API 测试 |
+| `internal/api/model_acl_page.go` | 模型分配页面与登录后入口 |
+| `internal/api/model_acl_page_test.go` | 页面注入测试 |
 | `.github/workflows/fork-model-acl-ci.yml` | fork 自己的 CI |
 
-### 修改（共 26 行，全是单行插入）
+### 修改的上游文件
 
 | 文件 | 改动 |
 | --- | --- |
 | `internal/config/sdk_config.go` | `APIKeys` 下方加 `ModelACL` 字段 |
 | `internal/config/config_load.go` | unmarshal 前调 `ExtractModelACL`，之后回填 |
 | `internal/config/parse.go` | 同上（第二个配置加载入口） |
-| `internal/api/server_routes.go` | 4 个路由组各加 `.Use(ModelACLMiddleware)`，2 个 models 路由加 `ModelListACLMiddleware` |
+| `internal/config/config_yaml.go` | 保存配置时恢复受限 Key 的对象形式，避免其他管理操作抹掉分配 |
+| `internal/api/server_routes.go` | 挂载动态 ACL、清单过滤和模型分配页面路由 |
+| `internal/api/server_management.go` | 注册管理 API，并向管理页注入登录后入口 |
+| `internal/api/handlers/management/config_basic.go` | 校验原始 YAML 时保留扩展 Key 形态 |
+| `internal/api/handlers/management/config_lists.go` | 增删或重命名 Key 时协调已有分配 |
 
 ### 三个关键设计决定
 
@@ -84,7 +106,8 @@ management secret，不是入站 key。
 上游那 9 处代码零改动。
 
 **2. 用中间件覆盖，不改 executor / handler。**
-`AuthMiddleware` 在 4 个路由组注册，紧跟其后插一个中间件就覆盖了所有模型调用路径。
+`AuthMiddleware` 在 4 个路由组注册，紧跟其后插一个动态中间件就覆盖了所有模型调用路径，
+每次请求读取热更新后的最新配置。
 executor、translator、registry 是上游高频改动区，碰它们等于自找冲突。
 
 **3. 清单裁剪用响应拦截，不改各个 handler。**
@@ -117,23 +140,26 @@ Claude 方言的响应带 `first_id`/`last_id`/`has_more`，是从**未裁剪**�
 
 ```bash
 # 跟上游更新
-git fetch origin
-git rebase origin/main
+git fetch upstream main
+git rebase upstream/main
 
 # 推到自己的 fork（CI 会自动跑编译 + 测试）
-git push --force-with-lease fork model-acl
+git push --force-with-lease origin model-acl
 ```
 
-**为什么冲突会很少**：核心逻辑在新增文件里，上游不会碰；修改只有 26 行单行插入。
-除非上游重写 `server_routes.go` 的路由注册段或 `sdk_config.go` 的结构体定义，
-否则 git 能自动合并。真冲突了也只是重新插入那几行。
+**为什么冲突会较少**：核心逻辑在新增文件里，上游不会碰；原生文件只保留必要接入点。
+若上游重写路由注册、管理配置保存或 SDK 配置结构，自动同步会停止推送并创建 issue，
+不会静默发布缺少模型分配功能的版本。
 
 冲突时的检查清单：
 1. `ModelACL` 字段还在 `sdk_config.go` 里吗
 2. 两个配置加载入口（`config_load.go`、`parse.go`）都调了 `ExtractModelACL` 吗
-3. 4 个路由组的 `.Use(ModelACLMiddleware(s.cfg))` 都还在吗
-4. 2 个 models 路由的 `ModelListACLMiddleware` 都还在吗
-5. 上游有没有新增模型调用端点或新的模型清单出口（对照 `server_routes.go` 的路由注册）
+3. 4 个路由组的 `DynamicModelACLMiddleware` 都还在吗
+4. 2 个 models 路由的 `DynamicModelListACLMiddleware` 都还在吗
+5. `GET/PUT /v0/management/model-acl` 和 `/model-acl.html` 都还在吗
+6. `SaveConfigPreserveComments` 仍会调用 `restoreModelACLAPIKeys` 吗
+7. “模型分配”入口是否默认隐藏，并只在 `.sidebar` 挂载后显示
+8. 上游有没有新增模型调用端点或新的模型清单出口（对照 `server_routes.go` 的路由注册）
 
 ## 未覆盖的范围
 

@@ -45,6 +45,7 @@ func SaveConfigPreserveComments(configFile string, cfg *Config) error {
 	if generated.Content[0].Kind != yaml.MappingNode {
 		return fmt.Errorf("expected generated root mapping node")
 	}
+	restoreModelACLAPIKeys(generated.Content[0], persistCfg.APIKeys, persistCfg.ModelACL)
 
 	// Remove deprecated sections before merging back the sanitized config.
 	removeLegacyAuthBlock(original.Content[0])
@@ -80,6 +81,58 @@ func SaveConfigPreserveComments(configFile string, cfg *Config) error {
 	data = NormalizeCommentIndentation(buf.Bytes())
 	_, err = f.Write(data)
 	return err
+}
+
+// restoreModelACLAPIKeys replaces the flattened api-keys representation emitted
+// by yaml.Marshal with the fork's object form for restricted keys. ModelACL is a
+// runtime-only field, so without this step any unrelated Management API save
+// would silently discard per-key model assignments.
+func restoreModelACLAPIKeys(root *yaml.Node, keys []string, acl ModelACL) {
+	if root == nil || root.Kind != yaml.MappingNode {
+		return
+	}
+	idx := findMapKeyIndex(root, "api-keys")
+	if idx < 0 || idx+1 >= len(root.Content) {
+		return
+	}
+
+	sequence := &yaml.Node{Kind: yaml.SequenceNode, Tag: "!!seq"}
+	for _, rawKey := range keys {
+		key := strings.TrimSpace(rawKey)
+		if key == "" {
+			continue
+		}
+		models, restricted := acl.AllowedModels(key)
+		models = normalizeModelList(models)
+		if !restricted || len(models) == 0 || containsWildcard(models) {
+			sequence.Content = append(sequence.Content, &yaml.Node{
+				Kind:  yaml.ScalarNode,
+				Tag:   "!!str",
+				Value: key,
+			})
+			continue
+		}
+
+		modelSequence := &yaml.Node{Kind: yaml.SequenceNode, Tag: "!!seq"}
+		for _, model := range models {
+			modelSequence.Content = append(modelSequence.Content, &yaml.Node{
+				Kind:  yaml.ScalarNode,
+				Tag:   "!!str",
+				Value: model,
+			})
+		}
+		sequence.Content = append(sequence.Content, &yaml.Node{
+			Kind: yaml.MappingNode,
+			Tag:  "!!map",
+			Content: []*yaml.Node{
+				{Kind: yaml.ScalarNode, Tag: "!!str", Value: "key"},
+				{Kind: yaml.ScalarNode, Tag: "!!str", Value: key},
+				{Kind: yaml.ScalarNode, Tag: "!!str", Value: "models"},
+				modelSequence,
+			},
+		})
+	}
+	root.Content[idx+1] = sequence
 }
 
 // SaveConfigPreserveCommentsUpdateNestedScalar updates a nested scalar key path like ["a","b"]

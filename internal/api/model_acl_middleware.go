@@ -30,7 +30,19 @@ const maxModelSniffBytes = 64 << 10
 // ModelACLMiddleware enforces cfg.ModelACL for model-bearing requests.
 // It is a no-op when no key is restricted, so unmodified configs pay nothing.
 func ModelACLMiddleware(cfg *config.Config) gin.HandlerFunc {
+	return modelACLMiddleware(func() *config.Config { return cfg })
+}
+
+// DynamicModelACLMiddleware resolves the latest hot-reloaded configuration for
+// each request. Server route middleware otherwise captures only the startup
+// config pointer and misses assignments changed through Management.
+func DynamicModelACLMiddleware(getConfig func() *config.Config) gin.HandlerFunc {
+	return modelACLMiddleware(getConfig)
+}
+
+func modelACLMiddleware(getConfig func() *config.Config) gin.HandlerFunc {
 	return func(c *gin.Context) {
+		cfg := getConfig()
 		if cfg == nil || len(cfg.ModelACL) == 0 {
 			c.Next()
 			return
@@ -165,7 +177,18 @@ func isAnthropicDialect(c *gin.Context) bool {
 // Listings are small JSON documents, so buffering costs nothing meaningful;
 // non-JSON and error responses pass through untouched.
 func ModelListACLMiddleware(cfg *config.Config) gin.HandlerFunc {
+	return modelListACLMiddleware(func() *config.Config { return cfg })
+}
+
+// DynamicModelListACLMiddleware is the hot-reload-aware listing counterpart to
+// DynamicModelACLMiddleware.
+func DynamicModelListACLMiddleware(getConfig func() *config.Config) gin.HandlerFunc {
+	return modelListACLMiddleware(getConfig)
+}
+
+func modelListACLMiddleware(getConfig func() *config.Config) gin.HandlerFunc {
 	return func(c *gin.Context) {
+		cfg := getConfig()
 		if cfg == nil || len(cfg.ModelACL) == 0 {
 			c.Next()
 			return

@@ -19,6 +19,7 @@ import (
 	codexmodels "github.com/router-for-me/CLIProxyAPI/v7/internal/client/codex/models"
 	"github.com/router-for-me/CLIProxyAPI/v7/internal/client/grokbuild"
 	"github.com/router-for-me/CLIProxyAPI/v7/internal/clienterror"
+	"github.com/router-for-me/CLIProxyAPI/v7/internal/config"
 	"github.com/router-for-me/CLIProxyAPI/v7/internal/home"
 	"github.com/router-for-me/CLIProxyAPI/v7/internal/logging"
 	"github.com/router-for-me/CLIProxyAPI/v7/internal/registry"
@@ -52,6 +53,7 @@ func (s *Server) setupRoutes() {
 	s.engine.HEAD("/healthz", healthzHandler)
 
 	s.engine.GET("/management.html", s.serveManagementControlPanel)
+	s.engine.GET("/model-acl.html", s.serveModelACLControlPanel)
 	openaiHandlers := openai.NewOpenAIAPIHandler(s.handlers)
 	geminiHandlers := gemini.NewGeminiAPIHandler(s.handlers)
 	claudeCodeHandlers := claude.NewClaudeCodeAPIHandler(s.handlers)
@@ -61,9 +63,9 @@ func (s *Server) setupRoutes() {
 	// OpenAI compatible API routes
 	v1 := s.engine.Group("/v1")
 	v1.Use(AuthMiddleware(s.accessManager))
-	v1.Use(ModelACLMiddleware(s.cfg)) // fork: per-key model access control
+	v1.Use(DynamicModelACLMiddleware(func() *config.Config { return s.cfg })) // fork: per-key model access control
 	{
-		v1.GET("/models", ModelListACLMiddleware(s.cfg), s.unifiedModelsHandler(openaiHandlers, claudeCodeHandlers))
+		v1.GET("/models", DynamicModelListACLMiddleware(func() *config.Config { return s.cfg }), s.unifiedModelsHandler(openaiHandlers, claudeCodeHandlers))
 		v1.POST("/chat/completions", openaiHandlers.ChatCompletions)
 		v1.POST("/completions", openaiHandlers.Completions)
 		v1.POST("/images/generations", openaiHandlers.ImagesGenerations)
@@ -102,7 +104,7 @@ func (s *Server) setupRoutes() {
 
 	openaiV1 := s.engine.Group("/openai/v1")
 	openaiV1.Use(AuthMiddleware(s.accessManager))
-	openaiV1.Use(ModelACLMiddleware(s.cfg)) // fork: per-key model access control
+	openaiV1.Use(DynamicModelACLMiddleware(func() *config.Config { return s.cfg })) // fork: per-key model access control
 	{
 		openaiV1.POST("/videos", openaiHandlers.VideosCreate)
 		openaiV1.GET("/videos/:video_id/content", openaiHandlers.VideosContent)
@@ -112,7 +114,7 @@ func (s *Server) setupRoutes() {
 	// Codex CLI direct route aliases (chatgpt_base_url compatible)
 	codexDirect := s.engine.Group("/backend-api/codex")
 	codexDirect.Use(AuthMiddleware(s.accessManager))
-	codexDirect.Use(ModelACLMiddleware(s.cfg)) // fork: per-key model access control
+	codexDirect.Use(DynamicModelACLMiddleware(func() *config.Config { return s.cfg })) // fork: per-key model access control
 	{
 		codexDirect.GET("/responses", openaiResponsesHandlers.ResponsesWebsocket)
 		codexDirect.POST("/responses", openaiResponsesHandlers.Responses)
@@ -123,9 +125,9 @@ func (s *Server) setupRoutes() {
 	// Gemini compatible API routes
 	v1beta := s.engine.Group("/v1beta")
 	v1beta.Use(AuthMiddleware(s.accessManager))
-	v1beta.Use(ModelACLMiddleware(s.cfg)) // fork: per-key model access control
+	v1beta.Use(DynamicModelACLMiddleware(func() *config.Config { return s.cfg })) // fork: per-key model access control
 	{
-		v1beta.GET("/models", ModelListACLMiddleware(s.cfg), s.geminiModelsHandler(geminiHandlers))
+		v1beta.GET("/models", DynamicModelListACLMiddleware(func() *config.Config { return s.cfg }), s.geminiModelsHandler(geminiHandlers))
 		v1beta.POST("/interactions", geminiHandlers.Interactions)
 		v1beta.POST("/models/*action", geminiHandlers.GeminiHandler)
 		v1beta.GET("/models/*action", s.geminiGetHandler(geminiHandlers))

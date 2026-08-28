@@ -146,14 +146,22 @@ func (h *Handler) deleteFromStringList(c *gin.Context, target *[]string, after f
 func (h *Handler) GetAPIKeys(c *gin.Context) { c.JSON(200, gin.H{"api-keys": h.cfg.APIKeys}) }
 func (h *Handler) PutAPIKeys(c *gin.Context) {
 	h.putStringList(c, func(v []string) {
+		before := append([]string(nil), h.cfg.APIKeys...)
 		h.cfg.APIKeys = append([]string(nil), v...)
+		h.cfg.ModelACL = reconcileModelACLKeys(before, h.cfg.APIKeys, h.cfg.ModelACL)
 	}, nil)
 }
 func (h *Handler) PatchAPIKeys(c *gin.Context) {
-	h.patchStringList(c, &h.cfg.APIKeys, func() {})
+	before := append([]string(nil), h.cfg.APIKeys...)
+	h.patchStringList(c, &h.cfg.APIKeys, func() {
+		h.cfg.ModelACL = reconcileModelACLKeys(before, h.cfg.APIKeys, h.cfg.ModelACL)
+	})
 }
 func (h *Handler) DeleteAPIKeys(c *gin.Context) {
-	h.deleteFromStringList(c, &h.cfg.APIKeys, func() {})
+	before := append([]string(nil), h.cfg.APIKeys...)
+	h.deleteFromStringList(c, &h.cfg.APIKeys, func() {
+		h.cfg.ModelACL = reconcileModelACLKeys(before, h.cfg.APIKeys, h.cfg.ModelACL)
+	})
 }
 
 // gemini-api-key: []GeminiKey

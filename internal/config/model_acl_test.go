@@ -1,10 +1,48 @@
 package config
 
 import (
+	"os"
+	"path/filepath"
+	"strings"
 	"testing"
 
 	"gopkg.in/yaml.v3"
 )
+
+func TestSaveConfigPreserveCommentsKeepsModelACLObjects(t *testing.T) {
+	dir := t.TempDir()
+	path := filepath.Join(dir, "config.yaml")
+	src := []byte("# keep me\nport: 8317\napi-keys:\n  - unrestricted\n  - key: limited\n    models: [model-b, model-a]\ndebug: false\n")
+	if errWrite := os.WriteFile(path, src, 0o600); errWrite != nil {
+		t.Fatal(errWrite)
+	}
+	cfg, errLoad := LoadConfig(path)
+	if errLoad != nil {
+		t.Fatal(errLoad)
+	}
+	cfg.Debug = true
+	if errSave := SaveConfigPreserveComments(path, cfg); errSave != nil {
+		t.Fatal(errSave)
+	}
+
+	saved, errRead := os.ReadFile(path)
+	if errRead != nil {
+		t.Fatal(errRead)
+	}
+	text := string(saved)
+	for _, want := range []string{"# keep me", "key: limited", "models:", "- model-a", "- model-b", "- unrestricted"} {
+		if !strings.Contains(text, want) {
+			t.Fatalf("saved config missing %q:\n%s", want, text)
+		}
+	}
+	reloaded, errReload := LoadConfig(path)
+	if errReload != nil {
+		t.Fatal(errReload)
+	}
+	if !reloaded.ModelACL.Allowed("limited", "model-a") || reloaded.ModelACL.Allowed("limited", "model-c") {
+		t.Fatalf("reloaded ACL = %#v", reloaded.ModelACL)
+	}
+}
 
 func TestExtractModelACLMixedForms(t *testing.T) {
 	src := []byte(`
