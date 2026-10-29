@@ -1,0 +1,74 @@
+@use '../../../styles/variables' as *;
+
+.wrap {
+  overflow: hidden;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+}
+
+.scroll {
+  overflow-x: auto;
+}
+
+.table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  color: var(--text-primary);
+  font-size: 12px;
+}
+
+.head {
+  background: transparent;
+
+  th {
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--border-subtle);
+    color: var(--text-tertiary);
+    font-family: $font-family;
+    font-size: 10px;
+    font-weight: 650;
+    line-height: 1.4;
+    letter-spacing: 0.05em;
+    text-align: left;
+    text-transform: uppercase;
+    vertical-align: middle;
+  }
+
+  th.alignRight {
+    text-align: right;
+  }
+}
+
+.body {
+  background: transparent;
+}
+
+.row {
+  transition: background-color 130ms ease;
+
+  td {
+    padding: 14px 12px;
+    border-bottom: 1px solid var(--border-secondary);
+    background: transparent;
+    line-height: 1.45;
+    vertical-align: middle;
+  }
+
+  &:last-child td {
+    border-bottom: 0;
+  }
+
+  &:hover td {
+    background: var(--bg-quinary);
+  }
+
+  &.selected td {
+    background: var(--bg-tertiary);
+  }
+}
+
+.alignRight {
+  text-align: right;
+}

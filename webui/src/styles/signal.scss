@@ -1,0 +1,92 @@
+@use 'variables' as *;
+
+// Shared page header and surface primitives.
+
+@mixin signal-hero {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 18px 28px;
+  flex-wrap: wrap;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+
+  h1 {
+    margin: 0;
+    color: var(--text-primary);
+    font-family: $font-display;
+    font-size: clamp(28px, 3vw, 34px);
+    font-weight: 620;
+    line-height: 1.12;
+    letter-spacing: -0.045em;
+  }
+
+  p {
+    margin: 0;
+    color: var(--text-secondary);
+    font-family: $font-family;
+    font-size: 13px;
+    font-weight: 400;
+    line-height: 1.65;
+    letter-spacing: 0;
+  }
+
+  button {
+    display: inline-flex;
+    min-height: 38px;
+    align-items: center;
+    gap: 7px;
+    padding: 0 15px;
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    font-family: $font-family;
+    font-size: 13px;
+    font-weight: 560;
+    line-height: 1;
+    cursor: pointer;
+    transition:
+      background-color var(--dur-hover) ease,
+      border-color var(--dur-hover) ease,
+      color var(--dur-hover) ease;
+
+    &:hover:not(:disabled) {
+      border-color: var(--border-primary);
+      background: var(--bg-tertiary);
+    }
+
+    &:disabled {
+      opacity: 0.48;
+      cursor: not-allowed;
+    }
+  }
+
+  @media (max-width: 720px) {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 16px;
+
+    h1 {
+      font-size: 28px;
+    }
+  }
+}
+
+@mixin signal-panel {
+  border: 1px solid var(--border-subtle);
+  border-radius: 16px;
+  background: var(--bg-primary);
+  box-shadow: var(--shadow);
+}
+
+@mixin signal-eyebrow {
+  color: var(--text-tertiary);
+  font-family: $font-family;
+  font-size: 11px;
+  font-weight: 650;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}

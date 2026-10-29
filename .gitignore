@@ -1,0 +1,76 @@
+# Binaries
+cli-proxy-api
+CLIProxyAPI
+test-output
+*.exe
+*.exe~
+
+# Local configuration and secrets
+config.yaml
+api-keys.json
+.env
+.env.*
+!.env.example
+!.env.cluster.example
+*.pem
+*.key
+*.crt
+*.p12
+
+# Runtime data
+/data/
+/bin/*
+/logs
+*.log
+/conv/*
+/temp/*
+/refs/*
+/plugins/*
+/home/*
+/monitoring
+/examples/plugin/bin/*
+/pgstore/*
+/gitstore/*
+/objectstore/*
+
+# Authentication data
+/auths/*
+!/auths/.gitkeep
+
+# Management panel build output
+webui/node_modules/
+webui/dist/
+webui/.vite/
+
+# Local caches and tooling metadata
+.tmp-*
+.gocache/
+.vscode/*
+.worktrees/
+.codex/*
+.claude/*
+.claude
+.gemini/*
+.serena/*
+.agent/*
+.agents
+.pi
+.agents/*
+.opencode/*
+.idea/*
+.beads/*
+.bmad/*
+_bmad/*
+_bmad-output/*
+.gitnexus/
+
+# macOS / Windows metadata
+.DS_Store
+._*
+Thumbs.db
+
+# Docker local override
+docker-compose.override.yml
+
+# Local LLM Wiki vault
+.llm-wiki

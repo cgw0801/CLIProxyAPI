@@ -1,0 +1,36 @@
+import { Navigate, useRoutes, type Location } from 'react-router-dom';
+import { DashboardPage } from '@/features/dashboard/DashboardPage';
+import { MonitoringPage } from '@/features/monitoring/MonitoringPage';
+import { ProvidersWorkbenchPage } from '@/features/providers/ProvidersWorkbenchPage';
+import { AuthFilesPage } from '@/features/authFiles/AuthFilesPage';
+import { AuthFilesOAuthExcludedEditPage } from '@/pages/AuthFilesOAuthExcludedEditPage';
+import { AuthFilesOAuthModelAliasEditPage } from '@/pages/AuthFilesOAuthModelAliasEditPage';
+import { OAuthPage } from '@/features/oauth/OAuthPage';
+import { QuotaPage } from '@/features/quota/QuotaPage';
+import { ConfigPage } from '@/features/config/ConfigPage';
+import { LogsPage } from '@/features/logs/LogsPage';
+import { SystemPage } from '@/pages/SystemPage';
+import { ApiKeysPage } from '@/features/apiKeys/ApiKeysPage';
+
+const MAIN_ROUTES = [
+  { path: '/', element: <DashboardPage /> },
+  { path: '/dashboard', element: <DashboardPage /> },
+  { path: '/monitoring', element: <MonitoringPage /> },
+  { path: '/settings', element: <Navigate to="/config" replace /> },
+  { path: '/api-keys', element: <ApiKeysPage /> },
+  { path: '/ai-providers', element: <ProvidersWorkbenchPage /> },
+  { path: '/ai-providers/*', element: <Navigate to="/ai-providers" replace /> },
+  { path: '/auth-files', element: <AuthFilesPage /> },
+  { path: '/auth-files/oauth-excluded', element: <AuthFilesOAuthExcludedEditPage /> },
+  { path: '/auth-files/oauth-model-alias', element: <AuthFilesOAuthModelAliasEditPage /> },
+  { path: '/oauth', element: <OAuthPage /> },
+  { path: '/quota', element: <QuotaPage /> },
+  { path: '/config', element: <ConfigPage /> },
+  { path: '/logs', element: <LogsPage /> },
+  { path: '/system', element: <SystemPage /> },
+  { path: '*', element: <Navigate to="/" replace /> },
+];
+
+export function MainRoutes({ location }: { location?: Location }) {
+  return useRoutes(MAIN_ROUTES, location);
+}

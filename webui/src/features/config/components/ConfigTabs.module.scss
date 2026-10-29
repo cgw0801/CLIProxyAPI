@@ -1,0 +1,112 @@
+@use '../../../styles/mixins' as *;
+
+.tabs {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  flex: 1;
+  min-width: 0;
+  padding: 0 2px;
+  overflow-x: auto;
+  border-bottom: 1px solid var(--border-color);
+  scrollbar-width: none;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+.tab {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+  min-height: 42px;
+  padding: 0 12px;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  background: transparent;
+  color: var(--text-secondary);
+  font-family: $font-family;
+  font-size: 12px;
+  font-weight: 500;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: color 140ms ease, border-color 140ms ease;
+
+  &:hover:not(:disabled) {
+    color: var(--text-primary);
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--primary-color);
+    outline-offset: -2px;
+  }
+}
+
+.tabActive {
+  border-bottom-color: var(--text-primary);
+  color: var(--text-primary);
+  font-weight: 600;
+
+  &:hover:not(:disabled) {
+    color: var(--text-primary);
+  }
+}
+
+.tabGlyph {
+  flex-shrink: 0;
+  opacity: 0.68;
+}
+
+.tabLabel {
+  line-height: 1.4;
+}
+
+.tabBadge {
+  padding: 1px 6px;
+  border-radius: 10px;
+  background: var(--failure-badge-bg);
+  color: var(--failure-badge-text);
+  font-size: 9px;
+  font-weight: 600;
+}
+
+.tabDirtyDot {
+  width: 5px;
+  height: 5px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: var(--warning-color);
+}
+
+/* Minimal segmented tabs */
+.tabs {
+  gap: 3px;
+  padding: 4px;
+  border: 1px solid var(--border-subtle);
+  border-radius: 14px;
+  background: var(--bg-tertiary);
+  overflow-x: auto;
+}
+
+.tab {
+  min-height: 36px;
+  padding: 0 12px;
+  border: 0;
+  border-radius: 10px;
+}
+
+.tabActive {
+  background: var(--bg-primary);
+  box-shadow: var(--shadow);
+  border-bottom-color: transparent;
+}
+
+.tabBadge { border-radius: 999px; }

@@ -1,0 +1,242 @@
+@use '../../../styles/mixins' as *;
+
+.searchBar {
+  display: flex;
+  align-items: center;
+  flex: 1 1 260px;
+  gap: 8px;
+  min-width: 0;
+  max-width: 620px;
+}
+
+.searchInputWrapper {
+  position: relative;
+  display: flex;
+  flex: 1;
+  align-items: center;
+  min-width: 0;
+
+  :global(.form-group) {
+    width: 100%;
+    margin-bottom: 0;
+  }
+}
+
+.searchInput {
+  height: 38px !important;
+  padding-right: 128px !important;
+  border-radius: 10px !important;
+  font-size: 12px !important;
+}
+
+.searchRight {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.searchCount {
+  display: inline-flex;
+  align-items: center;
+  min-height: 24px;
+  padding: 0 8px;
+  border: 1px solid var(--border-secondary);
+  border-radius: 10px;
+  background: var(--bg-tertiary);
+  color: var(--text-secondary);
+  font-size: 10px;
+  font-variant-numeric: tabular-nums;
+  pointer-events: none;
+  white-space: nowrap;
+}
+
+.searchButton {
+  @include button-reset;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 10px;
+  color: var(--text-secondary);
+
+  &:hover:not(:disabled) {
+    background: var(--bg-tertiary);
+    color: var(--text-primary);
+  }
+
+  &:disabled {
+    opacity: 0.38;
+    cursor: not-allowed;
+  }
+}
+
+.searchActions {
+  display: flex;
+  flex: none;
+  gap: 6px;
+
+  button {
+    width: 38px;
+    min-width: 38px;
+    height: 38px;
+    padding: 0 !important;
+    border-radius: 10px;
+  }
+}
+
+.editorWrapper {
+  display: flex;
+  flex: 0 0 auto;
+  flex-direction: column;
+  width: 100%;
+  height: clamp(500px, 70vh, 1040px);
+  overflow: hidden;
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  background: var(--bg-primary);
+
+  @supports (height: 100dvh) {
+    height: clamp(500px, 70dvh, 1040px);
+  }
+}
+
+.editorBar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: none;
+  min-height: 40px;
+  padding: 0 14px;
+  border-bottom: 1px solid var(--border-color);
+  background: var(--bg-secondary);
+}
+
+.editorTitle {
+  color: var(--text-primary);
+  font-family: $font-mono;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.editorMode {
+  margin-left: auto;
+  color: var(--text-tertiary);
+  font-size: 10.5px;
+}
+
+.editorBody {
+  flex: 1;
+  min-height: 0;
+  background: var(--bg-primary);
+
+  :global {
+    .cm-theme,
+    .cm-editor {
+      height: 100%;
+    }
+
+    .cm-editor {
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      font-family: $font-mono;
+      font-size: 11.5px;
+    }
+
+    .cm-editor.cm-focused {
+      outline: none;
+    }
+
+    .cm-scroller {
+      overflow: auto;
+      overscroll-behavior: contain;
+      -webkit-overflow-scrolling: touch;
+      touch-action: pan-x pan-y;
+      background: transparent;
+    }
+
+    .cm-content {
+      padding-block: 10px;
+      caret-color: var(--text-primary);
+    }
+
+    .cm-gutters {
+      border-right: 1px solid var(--border-secondary);
+      background: var(--bg-secondary);
+      color: var(--text-quaternary);
+    }
+
+    .cm-lineNumbers .cm-gutterElement {
+      min-width: 44px;
+      padding: 0 9px 0 12px;
+      font-size: 9.5px;
+    }
+
+    .cm-activeLine,
+    .cm-activeLineGutter {
+      background: color-mix(in srgb, var(--text-primary) 4%, transparent);
+    }
+
+    .cm-selectionBackground,
+    .cm-content ::selection {
+      background: color-mix(in srgb, var(--text-primary) 16%, transparent) !important;
+    }
+
+    .cm-selectionMatch {
+      background: color-mix(in srgb, var(--warning-color) 18%, transparent);
+    }
+
+    .cm-searchMatch {
+      background: color-mix(in srgb, var(--warning-color) 26%, transparent);
+      outline: 1px solid color-mix(in srgb, var(--warning-color) 42%, transparent);
+    }
+
+    .cm-searchMatch-selected {
+      background: color-mix(in srgb, var(--error-color) 24%, transparent);
+    }
+
+    .cm-foldGutter .cm-gutterElement {
+      color: var(--text-tertiary);
+    }
+  }
+}
+
+@include mobile {
+  .searchBar {
+    flex-basis: 100%;
+    flex-wrap: wrap;
+    max-width: none;
+  }
+
+  .searchActions {
+    flex: 1;
+    justify-content: stretch;
+
+    button {
+      flex: 1;
+      width: auto;
+    }
+  }
+
+  .editorWrapper {
+    height: clamp(420px, 68dvh, 780px);
+    border-radius: 10px;
+  }
+}
+
+@media (max-width: 480px) {
+  .searchInput {
+    padding-right: 108px !important;
+  }
+}
+
+/* Minimal source editor */
+.editorWrapper {
+  border-radius: 10px;
+  box-shadow: var(--shadow);
+}
+
+.searchInput { border-radius: 10px !important; }
+.searchCount { border-radius: 7px; }
+.searchButton { border-radius: 8px; }
+.searchActions button { border-radius: 9px; }

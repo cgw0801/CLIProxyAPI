@@ -1,0 +1,222 @@
+@use '../../../styles/mixins' as *;
+
+.tile {
+  position: relative;
+  display: grid;
+  grid-template-columns: 32px minmax(0, 1fr) 20px;
+  align-items: center;
+  gap: 10px;
+  min-height: 60px;
+  padding: 12px 0;
+  border: 0;
+  border-bottom: 1px solid var(--border-color);
+  border-radius: 0;
+  background: transparent;
+  transition:
+    color 120ms ease;
+
+  &:hover {
+    background: var(--bg-tertiary);
+  }
+
+  &:focus-within {
+    background: var(--bg-tertiary);
+  }
+
+  &[data-status='waiting'] {
+    border-color: color-mix(in srgb, var(--warning-color) 45%, var(--border-color));
+  }
+
+  &[data-status='success'] {
+    border-color: color-mix(in srgb, var(--success-color) 38%, var(--border-color));
+  }
+
+  &[data-status='error'] {
+    border-color: color-mix(in srgb, var(--error-color) 38%, var(--border-color));
+  }
+}
+
+.glyph {
+  display: flex;
+  width: 32px;
+  height: 32px;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  flex-shrink: 0;
+}
+
+.glyphImage {
+  display: block;
+  width: 18px;
+  height: 18px;
+  object-fit: contain;
+}
+
+.text {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.main {
+  @include button-reset;
+  @include text-ellipsis;
+  display: block;
+  max-width: 100%;
+  color: var(--text-primary);
+  font-size: 12.5px;
+  font-weight: 600;
+  line-height: 1.3;
+  text-align: left;
+
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 0;
+  }
+
+  &:focus-visible::after {
+    outline: 2px solid var(--text-primary);
+    outline-offset: -2px;
+  }
+}
+
+.caption {
+  min-width: 0;
+  color: var(--text-tertiary);
+  font-size: 10.5px;
+  line-height: 1.45;
+}
+
+.captionText {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.status {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: var(--text-secondary);
+}
+
+.statusDot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.tile[data-status='success'] .status {
+  color: var(--success-color);
+}
+
+.tile[data-status='error'] .status {
+  color: var(--error-color);
+}
+
+.trail {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  width: 20px;
+  height: 20px;
+  place-items: center;
+  border: 0;
+  border-radius: 0;
+  color: var(--text-tertiary);
+  transition:
+    border-color 140ms ease,
+    background-color 140ms ease,
+    color 140ms ease;
+
+  .tile:hover & {
+    color: var(--text-primary);
+  }
+}
+
+@media (max-width: 520px) {
+  .tile {
+    grid-template-columns: 30px minmax(0, 1fr) 20px;
+    gap: 8px;
+    min-height: 56px;
+    padding: 10px 0;
+  }
+
+  .glyph {
+    width: 30px;
+    height: 30px;
+  }
+}
+
+/* Minimal provider tile */
+.tile {
+  grid-template-columns: 44px minmax(0, 1fr) 28px;
+  gap: 14px;
+  min-height: 82px;
+  padding: 16px;
+  border: 1px solid var(--border-subtle);
+  border-radius: 10px;
+  background: var(--bg-primary);
+  box-shadow: var(--shadow);
+  transition: border-color 140ms ease, background-color 140ms ease;
+
+  &:hover,
+  &:focus-within {
+    border-color: var(--border-hover);
+    background: var(--bg-primary);
+  }
+
+  &[data-status='waiting'],
+  &[data-status='success'],
+  &[data-status='error'] {
+    border-color: var(--border-hover);
+  }
+}
+
+.glyph {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: var(--bg-tertiary);
+}
+
+.glyphImage {
+  width: 22px;
+  height: 22px;
+}
+
+.main {
+  font-size: 14px;
+  font-weight: 620;
+}
+
+.caption {
+  font-size: 11.5px;
+}
+
+.trail {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--bg-tertiary);
+}
+
+@media (max-width: 520px) {
+  .tile {
+    grid-template-columns: 40px minmax(0, 1fr) 26px;
+    padding: 14px;
+  }
+
+  .glyph {
+    width: 40px;
+    height: 40px;
+  }
+}

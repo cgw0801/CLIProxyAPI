@@ -1,0 +1,28 @@
+@use '../../styles/mixins' as *;
+@use '../../styles/variables' as *;
+
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+  width: 100%;
+  padding-bottom: 40px;
+}
+
+.layout {
+  display: grid;
+  align-items: start;
+  gap: 20px;
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.modelCatalogSlot {
+  margin-top: 4px;
+}
+
+@media (max-width: 768px) {
+  .page {
+    padding-bottom: 28px;
+    gap: 20px;
+  }
+}

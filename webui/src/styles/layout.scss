@@ -1,0 +1,357 @@
+@use './variables.scss' as *;
+
+:root {
+  --app-header-height: 64px;
+  --app-content-width: 1440px;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+  background: var(--bg-secondary);
+}
+
+body {
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  font-family: $font-family;
+  font-size: 14px;
+  letter-spacing: -0.006em;
+}
+
+.app-shell {
+  display: flex;
+  height: 100dvh;
+  flex-direction: column;
+  overflow: hidden;
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+}
+
+.app-header {
+  position: relative;
+  z-index: 80;
+  flex: none;
+  border-bottom: 1px solid var(--border-subtle);
+  background: var(--header-bg);
+}
+
+.app-header-inner {
+  display: flex;
+  width: 100%;
+  max-width: 1440px;
+  height: var(--app-header-height);
+  align-items: center;
+  gap: 30px;
+  margin: 0 auto;
+  padding: 0 32px;
+}
+
+.app-brand {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  gap: 10px;
+  color: var(--text-primary);
+  text-decoration: none;
+}
+
+.app-brand-mark {
+  display: grid;
+  width: 30px;
+  height: 30px;
+  flex: none;
+  place-items: center;
+  border-radius: 8px;
+  background: var(--text-primary);
+  color: var(--bg-primary);
+}
+
+.app-brand-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.app-brand-name {
+  font-family: $font-display;
+  font-size: 14px;
+  font-weight: 650;
+  letter-spacing: -0.025em;
+  line-height: 1.2;
+}
+
+.app-brand-sub {
+  color: var(--text-tertiary);
+  font-size: 9.5px;
+  font-weight: 500;
+  letter-spacing: 0.035em;
+  line-height: 1.2;
+  text-transform: uppercase;
+}
+
+.app-nav {
+  display: flex;
+  min-width: 0;
+  flex: 1;
+  align-items: center;
+  gap: 1px;
+  overflow-x: auto;
+  scrollbar-width: none;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+.app-nav-link {
+  display: inline-flex;
+  min-height: 36px;
+  flex: none;
+  align-items: center;
+  padding: 0 10px;
+  border-radius: 6px;
+  color: var(--text-secondary);
+  font-size: 12.5px;
+  font-weight: 500;
+  text-decoration: none;
+  white-space: nowrap;
+
+  &:hover {
+    color: var(--text-primary);
+  }
+
+  &.is-active {
+    color: var(--text-primary);
+    font-weight: 620;
+    text-decoration: underline;
+    text-decoration-thickness: 1.5px;
+    text-underline-offset: 7px;
+  }
+}
+
+.app-header-actions {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: 3px;
+}
+
+.app-connection {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-right: 5px;
+  color: var(--text-tertiary);
+  font-size: 11px;
+  white-space: nowrap;
+}
+
+.app-status-dot {
+  width: 6px;
+  height: 6px;
+  flex: none;
+  border-radius: 50%;
+  background: var(--text-quaternary);
+
+  &.is-live {
+    background: var(--success-color);
+  }
+}
+
+.app-icon-button {
+  display: inline-flex;
+  width: 32px;
+  height: 32px;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--text-secondary);
+  cursor: pointer;
+
+  &:hover {
+    background: var(--bg-tertiary);
+    color: var(--text-primary);
+  }
+
+  &.is-spinning svg {
+    animation: app-spin 0.7s linear infinite;
+  }
+}
+
+.app-logout:hover {
+  color: var(--error-color);
+}
+
+.app-language {
+  display: inline-flex;
+  align-items: center;
+  margin: 0 1px;
+
+  select {
+    width: auto;
+    min-height: 30px;
+    padding: 0 22px 0 8px;
+    border: 0;
+    border-radius: 6px;
+    background-color: transparent;
+    color: var(--text-secondary);
+    font-size: 11.5px;
+    cursor: pointer;
+  }
+
+  select:hover {
+    background: var(--bg-tertiary);
+    color: var(--text-primary);
+  }
+}
+
+.app-menu-button {
+  display: none;
+}
+
+.app-mobile-menu,
+.app-mobile-backdrop {
+  display: none;
+}
+
+.app-main {
+  min-height: 0;
+  flex: 1;
+  overflow-y: auto;
+  scrollbar-gutter: stable;
+  background: var(--bg-secondary);
+  overscroll-behavior: contain;
+}
+
+.app-content {
+  width: 100%;
+  max-width: var(--app-content-width);
+  margin: 0 auto;
+  padding: 40px 32px 72px;
+}
+
+@keyframes app-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (max-width: 1120px) {
+  .app-header-inner {
+    gap: 20px;
+    padding: 0 22px;
+  }
+
+  .app-nav-link {
+    padding: 0 8px;
+    font-size: 12px;
+  }
+
+  .app-connection-label {
+    display: none;
+  }
+}
+
+@media (max-width: 920px) {
+  .app-header-inner {
+    height: 58px;
+    gap: 14px;
+    padding: 0 18px;
+  }
+
+  .app-nav,
+  .app-connection {
+    display: none;
+  }
+
+  .app-header-actions {
+    margin-left: auto;
+  }
+
+  .app-menu-button {
+    display: inline-flex;
+  }
+
+  .app-mobile-backdrop {
+    position: fixed;
+    inset: 58px 0 0;
+    z-index: 70;
+    display: block;
+    padding: 0;
+    border: 0;
+    background: rgb(0 0 0 / 0.24);
+  }
+
+  .app-mobile-menu {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    left: 0;
+    z-index: 75;
+    display: flex;
+    max-height: calc(100dvh - 58px);
+    flex-direction: column;
+    gap: 2px;
+    overflow-y: auto;
+    padding: 10px 18px 16px;
+    border-bottom: 1px solid var(--border-color);
+    background: var(--bg-primary);
+  }
+
+  .app-mobile-menu-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 4px 8px 10px;
+    color: var(--text-tertiary);
+    font-size: 10.5px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  .app-mobile-link {
+    display: flex;
+    min-height: 42px;
+    align-items: center;
+    padding: 0 12px;
+    border-radius: 6px;
+    color: var(--text-secondary);
+    font-size: 13px;
+    font-weight: 500;
+    text-decoration: none;
+
+    &:hover,
+    &.is-active {
+      background: var(--bg-tertiary);
+      color: var(--text-primary);
+    }
+
+    &.is-active {
+      font-weight: 620;
+    }
+  }
+
+  .app-content {
+    padding: 30px 22px 60px;
+  }
+}
+
+@media (max-width: 640px) {
+  .app-header-inner {
+    padding: 0 14px;
+  }
+
+  .app-brand-sub,
+  .app-language {
+    display: none;
+  }
+
+  .app-content {
+    padding: 24px 16px 52px;
+  }
+}

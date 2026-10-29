@@ -1,0 +1,207 @@
+@use '../../styles/variables' as *;
+
+.root {
+  position: relative;
+  flex: none;
+  padding-bottom: 4px;
+}
+
+.trigger {
+  display: inline-flex;
+  height: 30px;
+  align-items: center;
+  gap: 6px;
+  padding: 0 9px;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  background: var(--bg-primary);
+  color: var(--text-secondary);
+  font-family: $font-family;
+  font-size: 11px;
+  white-space: nowrap;
+  cursor: pointer;
+
+  &:hover {
+    background: var(--bg-tertiary);
+    color: var(--text-primary);
+  }
+}
+
+.count {
+  display: inline-flex;
+  min-width: 27px;
+  align-items: center;
+  justify-content: center;
+  padding: 1px 5px;
+  border-radius: 5px;
+  background: var(--bg-quinary);
+  color: var(--text-tertiary);
+  font-family: $font-mono;
+  font-size: 9.5px;
+  font-variant-numeric: tabular-nums;
+}
+
+.panel {
+  position: absolute;
+  top: calc(100% + 7px);
+  right: 0;
+  z-index: $z-dropdown;
+  display: flex;
+  width: 300px;
+  max-width: min(340px, calc(100vw - 32px));
+  max-height: min(70vh, 460px);
+  flex-direction: column;
+  gap: 9px;
+  padding: 12px;
+  overflow-y: auto;
+  border: 1px solid var(--border-subtle);
+  border-radius: 13px;
+  background: var(--bg-primary);
+  box-shadow: var(--floating-shadow);
+}
+
+.sectionHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.sectionTitle {
+  color: var(--text-secondary);
+  font-family: $font-family;
+  font-size: 11.5px;
+  font-weight: 600;
+}
+
+.columnList {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.columnRow {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 5px;
+  border: 1px solid var(--border-secondary);
+  border-radius: 8px;
+  background: var(--bg-primary);
+  transition:
+    border-color 0.15s ease,
+    background 0.15s ease,
+    opacity 0.15s ease;
+
+  &:hover {
+    border-color: var(--border-color);
+    background: var(--bg-tertiary);
+  }
+}
+
+.columnRowHidden {
+  background: var(--bg-secondary);
+}
+
+.columnRowDragging {
+  opacity: 0.45;
+}
+
+.dragHandle {
+  flex: 0 0 13px;
+  color: var(--text-tertiary);
+  font-size: 11px;
+  line-height: 1;
+  letter-spacing: -2px;
+  cursor: grab;
+  user-select: none;
+
+  &:active {
+    cursor: grabbing;
+  }
+}
+
+.columnOption {
+  flex: 1;
+  min-width: 0;
+  padding: 2px 3px;
+  border-radius: 6px;
+
+  &:hover {
+    background: transparent;
+  }
+}
+
+.columnLabel {
+  display: block;
+  overflow: hidden;
+  color: var(--text-secondary);
+  font-family: $font-family;
+  font-size: 11.5px;
+  font-weight: 500;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.columnRowHidden .columnLabel {
+  color: var(--text-tertiary);
+}
+
+.columnMoveGroup {
+  display: flex;
+  flex: 0 0 auto;
+  gap: 1px;
+  margin-left: auto;
+}
+
+.columnMoveButton {
+  display: inline-flex;
+  width: 21px;
+  height: 21px;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: 0;
+  border-radius: 5px;
+  background: transparent;
+  color: var(--text-tertiary);
+  cursor: pointer;
+
+  &:hover:not(:disabled) {
+    background: var(--bg-quinary);
+    color: var(--text-primary);
+  }
+
+  &:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+  }
+}
+
+.resetButton {
+  padding: 3px 7px;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  background: var(--bg-primary);
+  color: var(--text-secondary);
+  font-family: $font-family;
+  font-size: 10.5px;
+  cursor: pointer;
+
+  &:hover:not(:disabled) {
+    background: var(--bg-tertiary);
+    color: var(--text-primary);
+  }
+
+  &:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+  }
+}
+
+.hint {
+  color: var(--text-tertiary);
+  font-size: 10.5px;
+  line-height: 1.45;
+}

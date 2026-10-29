@@ -1,0 +1,57 @@
+/**
+ * SCSS shared variables.
+ */
+
+// Colors
+$primary-color: #18181b;
+$success-color: #1f7a4d;
+$warning-color: #a16207;
+$error-color: #b42318;
+
+// Neutral
+$gray-400: #8b8d93;
+
+// Spacing
+$spacing-xs: 4px;
+$spacing-sm: 8px;
+$spacing-md: 16px;
+$spacing-lg: 24px;
+$spacing-xl: 32px;
+$spacing-2xl: 48px;
+
+// Radii
+$radius-sm: 6px;
+$radius-md: 10px;
+$radius-lg: 14px;
+$radius-full: 9999px;
+
+// Shadows are intentionally absent in the minimal interface.
+$shadow-sm: none;
+$shadow-md: none;
+$shadow-lg: none;
+
+// Motion
+$transition-fast: 140ms ease;
+$transition-normal: 180ms ease;
+
+// Breakpoints
+$breakpoint-mobile: 768px;
+$breakpoint-tablet: 1024px;
+
+// Z-index
+$z-dropdown: 1000;
+$z-modal: 2000;
+$z-notification: 3000;
+
+// Typography
+$font-family:
+  'Segoe UI Variable Text', 'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue',
+  Arial, sans-serif;
+
+$font-display:
+  'Space Grotesk Variable', 'Segoe UI Variable Display', 'Segoe UI', -apple-system, BlinkMacSystemFont,
+  sans-serif;
+
+$font-mono:
+  'JetBrains Mono Variable', 'Cascadia Mono', 'SFMono-Regular', Consolas, 'Liberation Mono',
+  Menlo, monospace;

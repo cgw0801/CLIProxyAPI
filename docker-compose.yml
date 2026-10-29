@@ -1,0 +1,28 @@
+services:
+  cli-proxy-api:
+    image: ${CLI_PROXY_IMAGE:-cli-proxy-api:local}
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        VERSION: ${VERSION:-0.0.1}
+        COMMIT: ${COMMIT:-none}
+        BUILD_DATE: ${BUILD_DATE:-unknown}
+    container_name: cli-proxy-api
+    command: ["./CLIProxyAPI", "--config", "/CLIProxyAPI/data/config.yaml"]
+    environment:
+      DEPLOY: ${DEPLOY:-}
+      MANAGEMENT_PASSWORD: ${MANAGEMENT_PASSWORD:-}
+      TZ: ${TZ:-Asia/Shanghai}
+    ports:
+      - "${CLI_PROXY_PORT:-8317}:8317"
+      # Optional OAuth callback ports for interactive browser login:
+      # - "1455:1455"
+      # - "54545:54545"
+      # - "51121:51121"
+    volumes:
+      - ${CLI_PROXY_DATA_DIR:-./data}:/CLIProxyAPI/data
+      - ${CLI_PROXY_AUTH_DIR:-./auths}:/root/.cli-proxy-api
+      - ${CLI_PROXY_LOG_DIR:-./logs}:/CLIProxyAPI/logs
+      - ${CLI_PROXY_PLUGIN_DIR:-./plugins}:/CLIProxyAPI/plugins
+    restart: unless-stopped

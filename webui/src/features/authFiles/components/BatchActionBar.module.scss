@@ -1,0 +1,61 @@
+@use '../../../styles/mixins' as *;
+
+/* 悬浮批量操作条：底部居中的实体工具栏（--content-center-x 对齐内容列中心） */
+
+.container {
+  position: fixed;
+  bottom: calc(12px + env(safe-area-inset-bottom, 0px));
+  left: var(--content-center-x, 50%);
+  transform: translateX(-50%);
+  width: min(960px, calc(100vw - 24px));
+  z-index: $z-dropdown;
+  pointer-events: none;
+}
+
+.bar {
+  pointer-events: auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+  padding: 10px 14px;
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  background: var(--floating-surface);
+  box-shadow: none;
+}
+
+.left,
+.right {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.count {
+  font-family: $font-family;
+  font-size: 12.5px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-primary);
+  padding-right: 4px;
+  white-space: nowrap;
+}
+
+@include mobile {
+  .container {
+    width: calc(100vw - 16px);
+  }
+
+  .bar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .left,
+  .right {
+    justify-content: center;
+  }
+}

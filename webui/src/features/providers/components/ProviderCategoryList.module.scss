@@ -1,0 +1,114 @@
+@use '../../../styles/variables' as *;
+
+.stack {
+  min-width: 0;
+}
+
+.aside {
+  padding: 0;
+  border: 0;
+  background: transparent;
+}
+
+.asideHeader,
+.asideCaption {
+  display: none;
+}
+
+.list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.item {
+  display: inline-flex;
+  min-height: 38px;
+  align-items: center;
+  gap: 7px;
+  padding: 0 12px;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  background: transparent;
+  color: var(--text-secondary);
+  text-align: left;
+  cursor: pointer;
+
+  &:hover {
+    color: var(--text-primary);
+  }
+
+  &.active {
+    border-bottom-color: var(--text-primary);
+    background: transparent;
+    color: var(--text-primary);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--text-primary);
+    outline-offset: 2px;
+  }
+}
+
+.itemIndex {
+  display: none;
+}
+
+.itemLeft {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 8px;
+}
+
+.itemText {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 7px;
+}
+
+.itemTitle {
+  overflow: hidden;
+  font-size: 12.5px;
+  font-weight: 560;
+  line-height: 1.25;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.itemSubtitle {
+  color: inherit;
+  opacity: 0.6;
+  font-size: 10.5px;
+  font-weight: 400;
+  white-space: nowrap;
+}
+
+.badge {
+  display: inline-flex;
+  min-width: 20px;
+  height: 20px;
+  align-items: center;
+  justify-content: center;
+  padding: 0 6px;
+  border-radius: 3px;
+  background: var(--bg-tertiary);
+  color: var(--text-tertiary);
+  font-size: 10px;
+  font-variant-numeric: tabular-nums;
+
+  .active & {
+    background: var(--bg-tertiary);
+    color: var(--text-secondary);
+  }
+}
+
+.badgeAmber {
+  color: var(--amber-text);
+}
+
+.badgeKimi {
+  color: var(--info-color);
+}

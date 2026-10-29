@@ -1,0 +1,222 @@
+@use '../../../styles/variables' as *;
+
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.search {
+  flex: 1 1 100%;
+  min-width: 0;
+
+  :global(.input) {
+    height: 38px;
+    border-radius: 10px;
+    background: var(--bg-primary);
+    font-size: 12.5px;
+  }
+}
+
+.searchIcon {
+  color: var(--text-tertiary);
+}
+
+.segmented {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  padding: 2px;
+  border: 1px solid var(--border-secondary);
+  border-radius: 10px;
+  background: var(--bg-tertiary);
+}
+
+.segment {
+  min-height: 32px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--text-secondary);
+  font-family: $font-family;
+  font-size: 12px;
+  font-weight: 500;
+  white-space: nowrap;
+  cursor: pointer;
+
+  &:hover {
+    color: var(--text-primary);
+  }
+}
+
+.segmentActive {
+  background: var(--bg-primary);
+  color: var(--text-primary);
+}
+
+.segmentProblem.segmentActive {
+  background: var(--failure-badge-bg);
+  color: var(--failure-badge-text);
+}
+
+.sort {
+  flex-shrink: 0;
+}
+
+.display {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.displayButton {
+  display: inline-flex;
+  height: 38px;
+  align-items: center;
+  gap: 6px;
+  padding: 0 10px;
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  background: var(--bg-primary);
+  color: var(--text-secondary);
+  font-family: $font-family;
+  font-size: 12px;
+  cursor: pointer;
+
+  &:hover {
+    background: var(--bg-tertiary);
+    color: var(--text-primary);
+  }
+}
+
+.displayButtonActive {
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+}
+
+.popover {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  z-index: $z-dropdown;
+  display: flex;
+  min-width: 210px;
+  flex-direction: column;
+  gap: 10px;
+  padding: 12px;
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  background: var(--bg-primary);
+  box-shadow: none;
+}
+
+.popoverRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  color: var(--text-secondary);
+  font-size: 12.5px;
+}
+
+.pageSizeInput {
+  width: 60px;
+  height: 28px;
+  padding: 0 7px;
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  font-family: $font-mono;
+  font-size: 11px;
+  text-align: right;
+
+  &:focus {
+    outline: none;
+    border-color: var(--border-primary);
+  }
+}
+
+.deleteAction {
+  display: inline-flex;
+  height: 38px;
+  align-items: center;
+  gap: 5px;
+  margin-left: auto;
+  padding: 0 8px;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--error-color);
+  font-size: 12px;
+  cursor: pointer;
+
+  &:hover:not(:disabled) {
+    background: var(--failure-badge-bg);
+  }
+
+  &:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+  }
+}
+
+@media (max-width: 720px) {
+  .toolbar {
+    align-items: stretch;
+  }
+
+  .search {
+    flex-basis: 100%;
+  }
+
+  .segmented {
+    order: 1;
+  }
+
+  .deleteAction {
+    margin-left: auto;
+  }
+}
+
+/* Minimal toolbar geometry */
+.search :global(.input) {
+  height: 40px;
+  border-radius: 12px;
+  background: var(--bg-primary);
+}
+
+.segmented {
+  gap: 3px;
+  padding: 3px;
+  border: 0;
+  border-radius: 12px;
+  background: var(--bg-tertiary);
+}
+
+.segment {
+  border-radius: 9px;
+}
+
+.segmentActive {
+  background: var(--bg-primary);
+  box-shadow: var(--shadow);
+}
+
+.displayButton {
+  border-radius: 11px;
+}
+
+.popover {
+  border-radius: 14px;
+  box-shadow: var(--shadow-lg);
+}
+
+.pageSizeInput {
+  border-radius: 8px;
+}
+
+.deleteAction {
+  border-radius: 9px;
+}

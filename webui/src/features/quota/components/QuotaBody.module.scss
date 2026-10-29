@@ -1,0 +1,245 @@
+@use '../../../styles/mixins' as *;
+
+/* Shared quota body used by the quota page and credential cards. */
+
+.quotaRow {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+  padding: 8px 0;
+
+  & + & {
+    border-top: 1px solid var(--border-secondary);
+  }
+}
+
+.quotaRowHeader {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  min-width: 0;
+}
+
+.quotaModel {
+  min-width: 0;
+  color: var(--text-secondary);
+  font-size: 12px;
+  font-weight: 550;
+  @include text-ellipsis;
+}
+
+.quotaMeta {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 7px;
+  flex-shrink: 0;
+  color: var(--text-tertiary);
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+}
+
+.quotaPercent {
+  color: var(--text-primary);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.quotaReset,
+.quotaResetRelative {
+  color: var(--text-tertiary);
+  font-size: 10.5px;
+}
+
+.quotaResetRelative::before {
+  content: '·';
+  margin: 0 4px;
+  color: var(--text-quaternary);
+}
+
+.quotaResetRelativeSoon {
+  color: var(--warning-text);
+  font-weight: 600;
+}
+
+.quotaAmount {
+  color: var(--text-secondary);
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+}
+
+.quotaMessage {
+  padding: 4px 0;
+  color: var(--text-tertiary);
+  font-size: 11.5px;
+  line-height: 1.5;
+}
+
+.quotaBar {
+  height: 4px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--text-primary) 8%, transparent);
+}
+
+.quotaBarFill {
+  height: 100%;
+  border-radius: inherit;
+  transition: width 180ms ease;
+}
+
+.quotaBarFillHigh {
+  background: var(--viz-success);
+}
+
+.quotaBarFillMedium {
+  background: var(--quota-medium-color);
+}
+
+.quotaBarFillLow {
+  background: var(--viz-failure);
+}
+
+.antigravityQuotaGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+
+  & + & {
+    margin-top: 4px;
+    padding-top: 10px;
+    border-top: 1px solid var(--border-secondary);
+  }
+}
+
+.antigravityQuotaGroupHeader {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.antigravityQuotaGroupTitle {
+  color: var(--text-secondary);
+  font-size: 11.5px;
+  font-weight: 600;
+}
+
+.antigravityQuotaGroupDescription {
+  color: var(--text-tertiary);
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+.codexPlan {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 14px;
+  padding: 2px 0;
+  color: var(--text-tertiary);
+  font-size: 11.5px;
+}
+
+.codexPlanItem {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 5px;
+  min-width: 0;
+}
+
+.codexPlanLabel {
+  color: var(--text-tertiary);
+}
+
+.codexPlanValue {
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+.codexPlanSeparator {
+  display: none;
+}
+
+.premiumPlanValue {
+  color: var(--warning-text);
+  font-weight: 600;
+}
+
+.elitePlanValue {
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+.codexResetCredits {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  padding-top: 4px;
+}
+
+.codexResetCreditsTitle {
+  color: var(--text-secondary);
+  font-size: 11.5px;
+  font-weight: 600;
+}
+
+.codexResetCreditRow {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 4px 12px;
+  min-width: 0;
+  padding: 3px 0;
+  color: var(--text-secondary);
+  font-size: 11.5px;
+  line-height: 1.45;
+}
+
+.codexResetCreditRowSoon {
+  color: var(--warning-text);
+}
+
+.codexResetCreditLabel {
+  min-width: 0;
+  @include text-ellipsis;
+}
+
+.codexResetCreditTime {
+  flex-shrink: 0;
+  margin-left: auto;
+  color: var(--text-tertiary);
+  font-size: 10.5px;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.codexResetCreditsError {
+  color: var(--danger-color);
+  font-size: 11px;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+
+@include mobile {
+  .quotaRowHeader {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 3px;
+  }
+
+  .quotaModel {
+    width: 100%;
+    white-space: normal;
+    overflow: visible;
+    text-overflow: clip;
+    overflow-wrap: anywhere;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .quotaBarFill {
+    transition: none;
+  }
+}

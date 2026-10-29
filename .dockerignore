@@ -1,0 +1,59 @@
+# Git and CI metadata
+.git
+.github
+.gitignore
+.dockerignore
+
+# Docker files
+Dockerfile
+docker-compose*.yml
+docker-build.*
+
+# Documentation and repository metadata
+docs
+README*.md
+AGENTS.md
+CLAUDE.md
+assets
+examples
+test
+
+# Management panel source and build dependencies
+webui
+
+# Runtime data and local secrets
+data
+auths
+logs
+conv
+monitoring
+plugins
+bin
+home
+config.yaml
+api-keys.json
+.env
+.env.*
+
+# Build artifacts and local tooling
+*.exe
+*.exe~
+*.log
+test-output
+.tmp-*
+.vscode
+.claude
+.codex
+.codex-worktrees
+.gemini
+.serena
+.agent
+.agents
+.antigravitycli
+.opencode
+.idea
+.junie
+.worktrees
+.bmad
+_bmad
+_bmad-output

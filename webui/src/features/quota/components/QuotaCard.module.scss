@@ -1,0 +1,254 @@
+@use '../../../styles/mixins' as *;
+
+.card {
+  display: flex;
+  min-width: 0;
+  min-height: 0;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px 0;
+  border: 0;
+  border-bottom: 1px solid var(--border-color);
+  border-radius: 0;
+  background: transparent;
+
+  &:hover {
+    border-color: var(--border-color);
+  }
+}
+
+.head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--border-secondary);
+}
+
+.iconWrap {
+  display: flex;
+  width: 30px;
+  height: 30px;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  border: 1px solid var(--border-secondary);
+  border-radius: 10px;
+  background: var(--bg-secondary);
+}
+
+.icon {
+  display: block;
+  width: 17px;
+  height: 17px;
+  object-fit: contain;
+}
+
+.iconFallback {
+  color: var(--text-secondary);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.fileName {
+  min-width: 0;
+  color: var(--text-primary);
+  font-family: $font-family;
+  font-size: 12.5px;
+  font-weight: 600;
+  @include text-ellipsis;
+}
+
+.body {
+  display: flex;
+  flex: 1;
+  min-width: 0;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.idleBody {
+  display: flex;
+  flex: 1;
+  min-height: 76px;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px;
+  border: 1px dashed var(--border-color);
+  border-radius: 10px;
+  background: var(--bg-secondary);
+  color: var(--text-tertiary);
+  cursor: pointer;
+  transition: border-color 150ms ease, background-color 150ms ease, color 150ms ease;
+
+  &:hover:not(:disabled) {
+    border-color: var(--border-hover);
+    background: var(--bg-tertiary);
+    color: var(--text-primary);
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+.idleGlyph {
+  opacity: 0.72;
+}
+
+.idleHint {
+  color: var(--text-tertiary);
+  font-size: 11px;
+  line-height: 1.5;
+  text-align: center;
+}
+
+.skeleton {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 12px;
+  padding: 8px 0;
+}
+
+.skeletonRow {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.skeletonLabel,
+.skeletonTrack {
+  display: block;
+  border-radius: 999px;
+  background: var(--bg-tertiary);
+  animation: quota-skeleton 1.2s ease-in-out infinite alternate;
+}
+
+.skeletonLabel {
+  width: 42%;
+  height: 10px;
+}
+
+.skeletonTrack {
+  width: 100%;
+  height: 7px;
+}
+
+@keyframes quota-skeleton {
+  to {
+    opacity: 0.5;
+  }
+}
+
+.errorStrip {
+  padding: 10px 12px;
+  border: 1px solid var(--failure-badge-border);
+  border-radius: 10px;
+  background: var(--failure-badge-bg);
+  color: var(--failure-badge-text);
+  font-size: 11px;
+  line-height: 1.55;
+  overflow-wrap: anywhere;
+}
+
+.actionRow {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 6px;
+  padding-top: 2px;
+}
+
+.actionPill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  min-height: 30px;
+  padding: 0 10px;
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 11px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 150ms ease, border-color 150ms ease, color 150ms ease;
+
+  &:hover:not(:disabled) {
+    border-color: var(--border-primary);
+    background: var(--bg-tertiary);
+    color: var(--text-primary);
+  }
+
+  &:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+  }
+}
+
+.spinning {
+  animation: quota-card-spin 0.8s linear infinite;
+}
+
+@keyframes quota-card-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .card,
+  .skeletonLabel,
+  .skeletonTrack,
+  .spinning {
+    animation: none;
+    transition: none;
+  }
+}
+
+/* Minimal quota card */
+.card {
+  gap: 14px;
+  padding: 20px;
+  border: 1px solid var(--border-subtle);
+  border-radius: 10px;
+  background: var(--bg-primary);
+  box-shadow: var(--shadow);
+
+  &:hover { border-color: var(--border-hover); }
+}
+
+.head { border-bottom: 0; padding-bottom: 0; }
+
+.iconWrap {
+  width: 38px;
+  height: 38px;
+  border: 0;
+  border-radius: 11px;
+  background: var(--bg-tertiary);
+}
+
+.idleBody {
+  border-radius: 12px;
+}
+
+.errorStrip { border-radius: 10px; }
+
+.actionPill { border-radius: 9px; }

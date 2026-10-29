@@ -1,0 +1,144 @@
+@use '../../../styles/mixins' as *;
+
+/* Section: natural height; hierarchy comes from thin rules and whitespace. */
+
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  min-width: 0;
+  box-sizing: border-box;
+  padding: 22px 0 26px;
+  border: 0;
+  border-top: 1px solid var(--border-color);
+  border-radius: 0;
+  background: transparent;
+
+  @include mobile {
+    gap: 14px;
+    padding: 16px;
+  }
+}
+
+.header {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 10px;
+  align-items: start;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--border-color);
+
+  @include mobile {
+    grid-template-columns: minmax(0, 1fr);
+    padding-bottom: 12px;
+  }
+}
+
+.badges {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.indexBadge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 32px;
+  height: 28px;
+  padding: 0 8px;
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  color: var(--text-secondary);
+  font-family: $font-mono;
+  font-size: 11px;
+  font-weight: 650;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.08em;
+}
+
+.iconBadge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 10px;
+  color: var(--text-secondary);
+  flex: 0 0 auto;
+}
+
+.heading {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
+.title {
+  margin: 0;
+  color: var(--text-primary);
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 1.18;
+  letter-spacing: -0.015em;
+}
+
+.description {
+  margin: 0;
+  max-width: 72ch;
+  color: var(--text-secondary);
+  font-size: 13px;
+  line-height: 1.65;
+
+  @include mobile {
+    max-width: none;
+  }
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: 100%;
+  min-width: 0;
+}
+
+/* Minimal section card */
+.card {
+  gap: 18px;
+  padding: 24px;
+  border: 1px solid var(--border-subtle);
+  border-radius: 10px;
+  background: var(--bg-primary);
+  box-shadow: var(--shadow);
+}
+
+.header {
+  padding-bottom: 0;
+  border-bottom: 0;
+}
+
+.indexBadge {
+  border: 0;
+  border-radius: 8px;
+  background: var(--bg-tertiary);
+}
+
+.iconBadge {
+  width: 32px;
+  height: 32px;
+  border-radius: 9px;
+  background: var(--bg-tertiary);
+}
+
+.title {
+  font-size: 17px;
+}
+
+@media (max-width: 768px) {
+  .card {
+    padding: 18px;
+  }
+}

@@ -1,0 +1,881 @@
+@use '../../styles/variables' as *;
+
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  padding-bottom: 40px;
+}
+
+.header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 18px 28px;
+  flex-wrap: wrap;
+}
+
+.heading {
+  min-width: 0;
+
+  h1 {
+    margin: 0;
+    color: var(--text-primary);
+  }
+
+  p {
+    margin: 8px 0 0;
+    color: var(--text-secondary);
+    font-size: 13px;
+  }
+}
+
+.headerActions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.rangeBar {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  padding: 2px;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  background: var(--bg-primary);
+}
+
+.rangeButton {
+  height: 28px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--text-secondary);
+  font-family: $font-family;
+  font-size: 12px;
+  cursor: pointer;
+
+  &:hover {
+    color: var(--text-primary);
+    background: var(--bg-tertiary);
+  }
+}
+
+.rangeButtonActive {
+  background: var(--text-primary);
+  color: var(--bg-primary);
+
+  &:hover {
+    background: var(--text-primary);
+    color: var(--bg-primary);
+  }
+}
+
+.autoRefresh {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--text-tertiary);
+  font-size: 11.5px;
+  cursor: pointer;
+
+  input {
+    width: 13px;
+    height: 13px;
+    margin: 0;
+    accent-color: var(--text-primary);
+  }
+}
+
+.actionButtons {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.actionButton {
+  min-height: 32px;
+
+  > span {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+}
+
+.refreshIconSpinning {
+  animation: monitoring-refresh-spin 800ms linear infinite;
+}
+
+@keyframes monitoring-refresh-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.textButton {
+  padding: 4px 6px;
+  border: 0;
+  background: transparent;
+  color: var(--text-tertiary);
+  font-family: $font-family;
+  font-size: 11.5px;
+  cursor: pointer;
+
+  &:hover {
+    color: var(--text-primary);
+  }
+}
+
+.summaryStrip {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  overflow: hidden;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  background: var(--bg-primary);
+}
+
+.summaryItem {
+  display: flex;
+  min-width: 0;
+  min-height: 86px;
+  flex-direction: column;
+  justify-content: center;
+  padding: 14px 18px;
+  border-right: 1px solid var(--border-subtle);
+
+  &:last-child {
+    border-right: 0;
+  }
+}
+
+.summaryLabel {
+  color: var(--text-tertiary);
+  font-size: 11px;
+  font-weight: 560;
+}
+
+.summaryValue {
+  margin-top: 6px;
+  color: var(--text-primary);
+  font-family: $font-display;
+  font-size: 24px;
+  font-weight: 620;
+  line-height: 1;
+  letter-spacing: -0.04em;
+  font-variant-numeric: tabular-nums;
+}
+
+.summaryHint {
+  margin-top: 6px;
+  overflow: hidden;
+  color: var(--text-quaternary);
+  font-size: 10.5px;
+  line-height: 1.35;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.toolbar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.searchInput {
+  height: 28px;
+  min-width: 190px;
+  flex: 1 1 230px;
+  padding: 0 10px;
+  border: 1px solid var(--border-color);
+  border-radius: 7px;
+  outline: none;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  font-family: $font-family;
+  font-size: 12px;
+
+  &::placeholder {
+    color: var(--text-tertiary);
+  }
+
+  &:focus {
+    border-color: var(--border-primary);
+  }
+}
+
+.filterSelect {
+  width: 148px;
+  flex: 0 0 auto;
+}
+
+.recordMeta {
+  margin-left: auto;
+  color: var(--text-quaternary);
+  font-size: 10.5px;
+  white-space: nowrap;
+}
+
+.tabsBar {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 12px;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.tabs {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 2px;
+  overflow-x: auto;
+}
+
+.tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 9px 10px 10px;
+  border: 0;
+  border-bottom: 1.5px solid transparent;
+  background: transparent;
+  color: var(--text-tertiary);
+  font-family: $font-family;
+  font-size: 12.5px;
+  font-weight: 540;
+  cursor: pointer;
+
+  &:hover {
+    color: var(--text-primary);
+  }
+}
+
+.tabActive {
+  border-bottom-color: var(--text-primary);
+  color: var(--text-primary);
+  font-weight: 620;
+}
+
+.tabCount {
+  padding: 1px 5px;
+  border-radius: 4px;
+  background: var(--bg-tertiary);
+  color: var(--text-tertiary);
+  font-size: 10px;
+  font-variant-numeric: tabular-nums;
+}
+
+.tableWrap {
+  overflow: hidden;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  background: var(--bg-primary);
+}
+
+.table {
+  width: 100%;
+  min-width: 0;
+  border-collapse: collapse;
+  table-layout: fixed;
+  font-variant-numeric: tabular-nums;
+
+  th {
+    padding: 9px 8px;
+    border-bottom: 1px solid var(--border-subtle);
+    background: var(--bg-quinary);
+    color: var(--text-tertiary);
+    font-size: 10.5px;
+    font-weight: 600;
+    text-align: left;
+    white-space: nowrap;
+  }
+
+  td {
+    padding: 10px 8px;
+    border-bottom: 1px solid var(--border-subtle);
+    color: var(--text-secondary);
+    font-size: 12px;
+    vertical-align: middle;
+  }
+
+  tbody tr:last-child td {
+    border-bottom: 0;
+  }
+}
+
+.realtimeTable {
+  min-width: 0;
+
+  th {
+    padding-top: 10px;
+    padding-bottom: 10px;
+    line-height: 1.25;
+    white-space: normal;
+  }
+
+  td {
+    padding-top: 12px;
+    padding-bottom: 12px;
+  }
+
+  .metricCell {
+    gap: 5px;
+  }
+}
+
+.colKey {
+  width: 16%;
+}
+
+.colModel {
+  width: 16%;
+}
+
+.colSettings {
+  width: 7%;
+}
+
+.colRecent {
+  width: 7%;
+}
+
+.colStatus {
+  width: 8%;
+}
+
+.colRate {
+  width: 7%;
+  text-align: right !important;
+}
+
+.colCalls {
+  width: 5%;
+  text-align: right !important;
+}
+
+.colTps {
+  width: 6%;
+  text-align: right !important;
+}
+
+.colCache {
+  width: 6%;
+  text-align: right !important;
+}
+
+.colLatency {
+  width: 11%;
+  text-align: right !important;
+}
+
+.colTime {
+  width: 10%;
+  text-align: right !important;
+}
+
+.colNumber {
+  width: 88px;
+  text-align: right !important;
+}
+
+.dataRow {
+  cursor: pointer;
+
+  &:hover td {
+    background: var(--bg-quinary);
+  }
+
+  &:focus-visible {
+    outline: none;
+
+    td {
+      background: var(--bg-tertiary);
+    }
+  }
+}
+
+.dataRowExpanded td {
+  background: var(--bg-quinary);
+}
+
+.clickableRow {
+  cursor: pointer;
+}
+
+.timeCell {
+  color: var(--text-tertiary) !important;
+  font-family: $font-mono;
+  font-size: 10.5px !important;
+  text-align: right;
+  white-space: nowrap;
+}
+
+.status {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.statusSuccess {
+  color: var(--success-color);
+}
+
+.statusFailed {
+  color: var(--error-color);
+}
+
+.statusDot {
+  width: 5px;
+  height: 5px;
+  flex: none;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.statusCode {
+  display: block;
+  margin-top: 3px;
+  color: var(--text-quaternary);
+  font-family: $font-mono;
+  font-size: 9.5px;
+}
+
+.modelName,
+.groupName {
+  display: block;
+  overflow: hidden;
+  color: var(--text-primary);
+  font-weight: 560;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.modelSub {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 6px;
+  margin-top: 3px;
+  overflow: hidden;
+  color: var(--text-quaternary);
+  font-family: $font-mono;
+  font-size: 9.5px;
+  white-space: nowrap;
+}
+
+.modelUpstream {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.modelResponse {
+  color: var(--warning-color);
+}
+
+.modelMismatch {
+  flex: none;
+  padding: 1px 5px;
+  border: 1px solid var(--warning-border);
+  border-radius: 4px;
+  background: var(--warning-bg);
+  color: var(--warning-text);
+  font-family: $font-family;
+  font-size: 9px;
+  font-weight: 600;
+  line-height: 1.35;
+}
+
+.providerCell,
+.accountCell,
+.keyCell {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.numberCell {
+  color: var(--text-primary) !important;
+  font-variant-numeric: tabular-nums;
+  text-align: right !important;
+  white-space: nowrap;
+}
+
+.warningText {
+  color: var(--warning-color) !important;
+}
+
+.durationGood {
+  color: var(--success-color) !important;
+}
+
+.durationWarn {
+  color: var(--warning-color) !important;
+}
+
+.durationBad {
+  color: var(--error-color) !important;
+}
+
+.cellSub {
+  display: block;
+  margin-top: 3px;
+  overflow: hidden;
+  color: var(--text-quaternary);
+  font-size: 9.5px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.settingCell,
+.metricCell {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.settingLine,
+.metricLine {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 7px;
+  white-space: nowrap;
+
+  small {
+    color: var(--text-quaternary);
+    font-size: 9.5px;
+  }
+
+  strong {
+    overflow: hidden;
+    color: var(--text-secondary);
+    font-size: 10.5px;
+    font-weight: 500;
+    text-overflow: ellipsis;
+  }
+}
+
+.metricLine {
+  justify-content: flex-end;
+  gap: 7px;
+
+  small {
+    font-size: 9.5px;
+  }
+
+  strong {
+    font-size: 10.5px;
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+.recentPattern {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  min-height: 18px;
+}
+
+.patternDot {
+  width: 4px;
+  height: 14px;
+  flex: none;
+  border-radius: 1px;
+}
+
+.patternSuccess {
+  background: var(--success-color);
+  opacity: 0.75;
+}
+
+.patternFailed {
+  background: var(--error-color);
+}
+
+.timePart {
+  display: block;
+  line-height: 1.4;
+}
+
+.detailRow td {
+  padding: 0;
+  background: var(--bg-quinary);
+}
+
+.detail {
+  padding: 4px 0 14px;
+}
+
+.detailGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 13px 26px;
+  padding: 14px 18px;
+}
+
+.detailItem {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 3px;
+
+  span {
+    color: var(--text-quaternary);
+    font-size: 10px;
+  }
+
+  strong {
+    overflow: hidden;
+    color: var(--text-secondary);
+    font-size: 11.5px;
+    font-weight: 500;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}
+
+.mono {
+  font-family: $font-mono;
+  font-size: 10.5px !important;
+}
+
+.failureBox {
+  margin: 0 18px;
+  padding: 10px 12px;
+  border-radius: 6px;
+  background: var(--failure-badge-bg);
+
+  span {
+    display: block;
+    margin-bottom: 5px;
+    color: var(--failure-badge-text);
+    font-size: 10px;
+    font-weight: 600;
+  }
+
+  code {
+    display: block;
+    overflow-wrap: anywhere;
+    color: var(--failure-badge-text);
+    font-family: $font-mono;
+    font-size: 10.5px;
+    line-height: 1.5;
+  }
+}
+
+.emptyState {
+  padding: 46px 20px;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  background: var(--bg-primary);
+  color: var(--text-tertiary);
+  font-size: 12.5px;
+  text-align: center;
+}
+
+.errorBox {
+  padding: 10px 12px;
+  border: 1px solid var(--failure-badge-border);
+  border-radius: 7px;
+  background: var(--failure-badge-bg);
+  color: var(--failure-badge-text);
+  font-size: 12px;
+}
+
+.pagination {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+  padding-top: 2px;
+}
+
+.pageButtons {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+
+.pageButton {
+  display: inline-flex;
+  min-width: 30px;
+  height: 30px;
+  align-items: center;
+  justify-content: center;
+  padding: 0 9px;
+  border: 1px solid var(--border-color);
+  border-radius: 7px;
+  background: var(--bg-primary);
+  color: var(--text-secondary);
+  font-family: $font-family;
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  cursor: pointer;
+
+  &:hover:not(:disabled) {
+    border-color: var(--border-primary);
+    background: var(--bg-tertiary);
+    color: var(--text-primary);
+  }
+
+  &:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+}
+
+.pageButtonActive {
+  border-color: var(--text-primary);
+  background: var(--text-primary);
+  color: var(--bg-primary);
+
+  &:hover:not(:disabled) {
+    border-color: var(--text-primary);
+    background: var(--text-primary);
+    color: var(--bg-primary);
+  }
+}
+
+.pageEllipsis {
+  display: inline-flex;
+  min-width: 20px;
+  height: 30px;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-quaternary);
+  font-size: 12px;
+}
+
+.pageMeta {
+  color: var(--text-tertiary);
+  font-size: 11.5px;
+  font-variant-numeric: tabular-nums;
+}
+
+.pageSize {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: auto;
+  color: var(--text-tertiary);
+  font-size: 11.5px;
+
+  select {
+    height: 28px;
+    padding: 0 8px;
+    border: 1px solid var(--border-color);
+    border-radius: 7px;
+    outline: none;
+    background: var(--bg-primary);
+    color: var(--text-secondary);
+    font-family: $font-family;
+    font-size: 11.5px;
+  }
+}
+
+@media (max-width: 980px) {
+  .summaryStrip {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .summaryItem:nth-child(3n) {
+    border-right: 0;
+  }
+
+  .detailGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 860px) {
+  .table {
+    th {
+      padding: 8px 4px;
+      font-size: 9.5px;
+    }
+
+    td {
+      padding: 9px 4px;
+    }
+  }
+
+  .modelName,
+  .groupName {
+    font-size: 11px;
+  }
+
+  .modelSub,
+  .cellSub {
+    font-size: 8.8px;
+  }
+
+  .settingLine {
+    gap: 4px;
+
+    small {
+      font-size: 8.8px;
+    }
+
+    strong {
+      font-size: 9.5px;
+    }
+  }
+
+  .timeCell {
+    font-size: 9.5px !important;
+  }
+
+  .filterSelect {
+    width: 136px;
+  }
+}
+
+@media (max-width: 640px) {
+  .header {
+    align-items: flex-start;
+  }
+
+  .headerActions {
+    width: 100%;
+  }
+
+  .summaryStrip {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .summaryItem {
+    border-bottom: 1px solid var(--border-subtle);
+  }
+
+  .summaryItem:nth-child(2n) {
+    border-right: 0;
+  }
+
+  .summaryItem:last-child {
+    border-bottom: 0;
+  }
+
+  .detailGrid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .recordMeta {
+    width: 100%;
+    margin-left: 0;
+  }
+
+  .searchInput {
+    flex-basis: 100%;
+  }
+}

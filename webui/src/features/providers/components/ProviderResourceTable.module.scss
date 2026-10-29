@@ -1,0 +1,276 @@
+@use '../../../styles/variables' as *;
+
+.providerTable {
+  table-layout: fixed;
+}
+
+.primaryCell {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.primaryName {
+  max-width: 100%;
+  overflow: hidden;
+  color: var(--text-primary);
+  font-size: 13px;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.primarySub {
+  max-width: 100%;
+  overflow: hidden;
+  color: var(--text-tertiary);
+  font-family: $font-mono;
+  font-size: 11px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.modelList {
+  display: flex;
+  width: 100%;
+  min-width: 0;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.modelListItem,
+.modelListEmpty {
+  color: var(--text-secondary);
+  font-family: $font-mono;
+  font-size: 11px;
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+}
+
+.modelListEmpty {
+  display: block;
+  width: 100%;
+}
+
+.noteText {
+  display: block;
+  width: 100%;
+  min-width: 0;
+  overflow: hidden;
+  color: var(--text-secondary);
+  font-size: 11.5px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.baseUrl {
+  display: block;
+  width: 100%;
+  min-width: 0;
+  overflow: hidden;
+  color: var(--text-secondary);
+  font-family: $font-mono;
+  font-size: 11px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.chip,
+.metric,
+.flagTag,
+.statusBadge,
+.statPill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 7px;
+  border-radius: 6px;
+  font-family: $font-family;
+  font-size: 10.5px;
+  font-weight: 500;
+  line-height: 1.35;
+  white-space: nowrap;
+}
+
+.chip,
+.metric,
+.flagTag {
+  background: var(--bg-quinary);
+  color: var(--text-tertiary);
+}
+
+.metricLabel {
+  color: var(--text-tertiary);
+}
+
+.metricValue {
+  color: var(--text-primary);
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+}
+
+.metricsCell {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  align-items: center;
+}
+
+.priorityBadge {
+  display: inline-flex;
+  min-width: 30px;
+  align-items: center;
+  justify-content: center;
+  padding: 3px 8px;
+  border-radius: 7px;
+  background: var(--bg-quinary);
+  color: var(--text-primary);
+  font-family: $font-mono;
+  font-size: 11.5px;
+  font-variant-numeric: tabular-nums;
+  font-weight: 650;
+  line-height: 1.35;
+}
+
+.priorityZero {
+  color: var(--text-tertiary);
+  font-weight: 500;
+}
+
+.statusBadge {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--text-secondary);
+}
+
+.statusCell {
+  display: flex;
+  min-width: 0;
+  max-width: 180px;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+}
+
+.stats {
+  display: flex;
+  max-width: 100%;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.statPill {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--text-tertiary);
+  font-variant-numeric: tabular-nums;
+}
+
+.statSuccess {
+  color: var(--success-color);
+}
+
+.statFailure {
+  color: var(--error-color);
+}
+
+.statusActive {
+  color: var(--text-secondary);
+
+  svg {
+    color: var(--success-color);
+  }
+}
+
+.statusDisabled {
+  color: var(--text-secondary);
+
+  svg {
+    color: var(--warning-color);
+  }
+}
+
+.statusBarWrap {
+  width: min(100%, 150px);
+  min-width: 0;
+}
+
+.actionsHead,
+.actionsCell {
+  width: 136px;
+  min-width: 136px;
+}
+
+.actionsCellSelected {
+  background: var(--bg-tertiary);
+}
+
+.actions {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 2px;
+}
+
+.toggleWrap {
+  display: inline-flex;
+  align-items: center;
+  margin-right: 2px;
+}
+
+.iconBtn {
+  display: inline-flex;
+  width: 30px;
+  height: 30px;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--text-tertiary);
+  cursor: pointer;
+  transition:
+    background-color 130ms ease,
+    color 130ms ease;
+
+  &:hover:not(:disabled) {
+    background: var(--bg-tertiary);
+    color: var(--text-primary);
+  }
+
+  &:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--text-primary);
+    outline-offset: -1px;
+  }
+}
+
+.iconBtnDanger {
+  color: var(--error-color);
+
+  &:hover:not(:disabled) {
+    background: var(--failure-badge-bg);
+    color: var(--error-color);
+  }
+}
+
+@media (max-width: 1100px) {
+  .providerTable {
+    table-layout: auto;
+  }
+
+  .actionsHead,
+  .actionsCell {
+    width: auto;
+    min-width: 120px;
+  }
+}
