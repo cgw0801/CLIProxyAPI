@@ -173,7 +173,7 @@ export interface CloakInput {
 export interface ProviderEntryFormInput extends ProviderBehaviorOptions {
   /** OpenAI 创建时只在 apiKeyEntries 中传 */
   apiKey: string;
-  /** OpenAI 必填,其余 brand 不展示 */
+  /** OpenAI compatibility identifier; derived from the note field in the form. */
   name: string;
   /** Optional free-form label shown in the provider detail view. */
   note?: string;

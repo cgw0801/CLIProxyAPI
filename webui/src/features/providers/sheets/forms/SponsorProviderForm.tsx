@@ -1,5 +1,6 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useNotificationStore } from '@/stores';
 import { Collapsible } from '@/components/ui/Collapsible';
 import { Select } from '@/components/ui/Select';
 import {
@@ -36,6 +37,7 @@ import type {
 import { ModelDiscoveryPanel } from './ModelDiscoveryPanel';
 import { ModelEntriesEditor } from './ModelEntriesEditor';
 import { useModelDiscovery, type UseModelDiscoveryResult } from './useModelDiscovery';
+import { useInvalidFieldFeedback } from './useInvalidFieldFeedback';
 import styles from './sharedForm.module.scss';
 import { readRuntimePolicy, validateRuntimePolicy } from '../../runtimePolicy';
 import { readModelOptions, validateModelOptions } from '../../modelOptions';
@@ -54,6 +56,8 @@ interface SponsorProviderFormProps {
   onDirtyChange?: (dirty: boolean) => void;
 }
 
+type ValidationIssue = { message: string; field?: string };
+
 interface SponsorModelSectionProps {
   label: string;
   description: string;
@@ -67,6 +71,7 @@ interface SponsorModelSectionProps {
 interface SponsorKeyEntryCardProps {
   entry: SponsorKeyEntryInput;
   index: number;
+  forceExpanded: boolean;
   formId: string;
   mode: 'create' | 'edit';
   definition: SponsorProviderDefinition;
@@ -282,6 +287,7 @@ function SponsorModelSection({
 function SponsorKeyEntryCard({
   entry,
   index,
+  forceExpanded,
   formId,
   mode,
   definition,
@@ -296,6 +302,10 @@ function SponsorKeyEntryCard({
   const [expanded, setExpanded] = useState(
     () => mode === 'create' || !entry.existingApiKey?.trim()
   );
+
+  useEffect(() => {
+    if (forceExpanded) setExpanded(true);
+  }, [forceExpanded]);
   const endpointUrl = protocolUrlForEntry(entry, definition);
   const protocolLabel = t(
     `providersPage.sponsor.protocols.${sponsorProtocolI18nKey(entry.protocol)}`
@@ -338,7 +348,7 @@ function SponsorKeyEntryCard({
   };
 
   return (
-    <div className={styles.entryCard}>
+    <div className={styles.entryCard} data-provider-field={`sponsorKey${index}`}>
       <div className={styles.entryCardHeader}>
         <button
           type="button"
@@ -628,7 +638,10 @@ export function SponsorProviderForm({
   onDirtyChange,
 }: SponsorProviderFormProps) {
   const { t } = useTranslation();
+  const { showNotification } = useNotificationStore();
   const definition = useMemo(() => getSponsorProviderDefinition(brand), [brand]);
+  const formRef = useRef<HTMLFormElement | null>(null);
+  const { activeField, highlightInvalidField } = useInvalidFieldFeedback(formRef);
   const [form, setForm] = useState<ProviderEntryFormInput>(() =>
     buildInitialForm(definition, resource, mode)
   );
@@ -676,43 +689,68 @@ export function SponsorProviderForm({
     updateEntries([...entries, emptySponsorKeyEntry(definition, protocol)]);
   };
 
-  const validateEntries = (): string | null => {
-    for (const entry of entries) {
+  const validateEntries = (): ValidationIssue | null => {
+    for (const [index, entry] of entries.entries()) {
       const modelError = validateModelOptions(entry.models);
-      if (modelError) return t(modelError);
+      if (modelError) return { message: t(modelError), field: `sponsorKey${index}` };
       if (!entry.runtimePolicy) continue;
       const policyError = validateRuntimePolicy(entry.runtimePolicy);
-      if (policyError) return t(policyError);
+      if (policyError) return { message: t(policyError), field: `sponsorKey${index}` };
     }
     if (!entries.length) {
-      return mode === 'edit' ? null : t('providersPage.sponsor.validation.keyRequired');
+      return mode === 'edit'
+        ? null
+        : { message: t('providersPage.sponsor.validation.keyRequired') };
     }
-    const missingKey = entries.some(
+    const missingKeyIndex = entries.findIndex(
       (entry) => !entry.apiKey.trim() && !entry.existingApiKey?.trim()
     );
-    if (missingKey) return t('providersPage.sponsor.validation.keyRequired');
-    const protocolSet = new Set(entries.map((entry) => entry.protocol));
-    if (protocolSet.size !== entries.length) {
-      return t('providersPage.sponsor.validation.protocolDuplicate');
+    if (missingKeyIndex >= 0) {
+      return {
+        message: t('providersPage.sponsor.validation.keyRequired'),
+        field: `sponsorKey${missingKeyIndex}`,
+      };
     }
-    if (
-      entries.some((entry) => entry.weight !== undefined && !Number.isSafeInteger(entry.weight))
-    ) {
-      return t('providersPage.form.validation.weightInteger');
+    const seenProtocols = new Set<SponsorProtocol>();
+    const duplicateIndex = entries.findIndex((entry) => {
+      if (seenProtocols.has(entry.protocol)) return true;
+      seenProtocols.add(entry.protocol);
+      return false;
+    });
+    if (duplicateIndex >= 0) {
+      return {
+        message: t('providersPage.sponsor.validation.protocolDuplicate'),
+        field: `sponsorKey${duplicateIndex}`,
+      };
     }
-    if (
-      entries.some((entry) => entry.weight !== undefined && entry.weight > MAX_CREDENTIAL_WEIGHT)
-    ) {
-      return t('providersPage.form.validation.weightMax', { max: MAX_CREDENTIAL_WEIGHT });
+    const integerWeightIndex = entries.findIndex(
+      (entry) => entry.weight !== undefined && !Number.isSafeInteger(entry.weight)
+    );
+    if (integerWeightIndex >= 0) {
+      return {
+        message: t('providersPage.form.validation.weightInteger'),
+        field: `sponsorKey${integerWeightIndex}`,
+      };
+    }
+    const maxWeightIndex = entries.findIndex(
+      (entry) => entry.weight !== undefined && entry.weight > MAX_CREDENTIAL_WEIGHT
+    );
+    if (maxWeightIndex >= 0) {
+      return {
+        message: t('providersPage.form.validation.weightMax', { max: MAX_CREDENTIAL_WEIGHT }),
+        field: `sponsorKey${maxWeightIndex}`,
+      };
     }
     return null;
   };
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    const validationError = validateEntries();
-    if (validationError) {
-      setError(validationError);
+    const issue = validateEntries();
+    if (issue) {
+      setError(issue.message);
+      showNotification(issue.message, 'error');
+      highlightInvalidField(issue.field);
       return;
     }
     try {
@@ -743,7 +781,13 @@ export function SponsorProviderForm({
   }
 
   return (
-    <form id={formId} className={styles.form} onSubmit={handleSubmit} noValidate>
+    <form
+      ref={formRef}
+      id={formId}
+      className={styles.form}
+      onSubmit={handleSubmit}
+      noValidate
+    >
       <div className={styles.section}>
         <h3 className={styles.sectionTitle}>{t('providersPage.sponsor.groupedKeysTitle')}</h3>
         {entries.map((entry, index) => (
@@ -751,6 +795,7 @@ export function SponsorProviderForm({
             key={`${entry.protocol}-${index}`}
             entry={entry}
             index={index}
+            forceExpanded={activeField === `sponsorKey${index}`}
             formId={formId}
             mode={mode}
             definition={definition}

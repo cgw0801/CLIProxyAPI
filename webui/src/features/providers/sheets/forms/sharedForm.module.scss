@@ -39,6 +39,47 @@
   min-width: 0;
 }
 
+[data-provider-field] {
+  scroll-margin-block: 24px;
+}
+
+.fieldAnchor {
+  display: block;
+  min-width: 0;
+  border-radius: 4px;
+}
+
+.fieldHighlightActive {
+  border-radius: 4px;
+  animation: provider-field-highlight 2.2s var(--ease-out-strong, ease-out);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fieldHighlightActive {
+    animation: none;
+    outline: 2px solid var(--destructive-color);
+    outline-offset: 3px;
+  }
+}
+
+@keyframes provider-field-highlight {
+  0% {
+    outline: 2px solid var(--destructive-color);
+    outline-offset: 3px;
+    background-color: var(--destructive-10);
+  }
+  55% {
+    outline: 2px solid var(--destructive-30);
+    outline-offset: 3px;
+    background-color: var(--destructive-10);
+  }
+  100% {
+    outline: 2px solid transparent;
+    outline-offset: 3px;
+    background-color: transparent;
+  }
+}
+
 .label {
   font-size: 12px;
   font-weight: 500;

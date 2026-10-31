@@ -3,7 +3,7 @@ package buildinfo
 
 const (
 	// DefaultVersion is the release version used by development and container builds.
-	DefaultVersion = "0.0.1"
+	DefaultVersion = "0.0.2"
 
 	// UpdateRepository is the GitHub repository that publishes application releases.
 	UpdateRepository = "cgw0801/CLIProxyAPI"

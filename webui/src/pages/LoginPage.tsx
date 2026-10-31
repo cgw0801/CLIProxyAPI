@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useState, type KeyboardEvent } from 'r
 import { Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { IconEye, IconEyeOff } from '@/components/ui/icons';
-import { useAuthStore, useLanguageStore, useThemeStore } from '@/stores';
+import { useAuthStore, useLanguageStore, useNotificationStore, useThemeStore } from '@/stores';
 import { detectApiBaseFromLocation, normalizeApiBase } from '@/utils/connection';
 import { LANGUAGE_LABEL_KEYS, LANGUAGE_ORDER } from '@/utils/constants';
 import { isSupportedLanguage } from '@/utils/language';
@@ -41,22 +41,43 @@ function getLocalizedErrorMessage(error: unknown, t: (key: string) => string): s
   if (status === 403) return withHttpStatus(t('login.error_forbidden'));
   if (status === 404) return withHttpStatus(t('login.error_not_found'));
   if (status && status >= 500) return withHttpStatus(t('login.error_server'));
-  if (code === 'ECONNABORTED' || message.toLowerCase().includes('timeout')) return t('login.error_timeout');
-  if (code === 'ERR_NETWORK' || message.toLowerCase().includes('network error')) return t('login.error_network');
-  if (code === 'ERR_CERT_AUTHORITY_INVALID' || message.toLowerCase().includes('certificate')) return t('login.error_ssl');
-  if (message.toLowerCase().includes('cors') || message.toLowerCase().includes('cross-origin')) return t('login.error_cors');
+  if (code === 'ECONNABORTED' || message.toLowerCase().includes('timeout'))
+    return t('login.error_timeout');
+  if (code === 'ERR_NETWORK' || message.toLowerCase().includes('network error'))
+    return t('login.error_network');
+  if (code === 'ERR_CERT_AUTHORITY_INVALID' || message.toLowerCase().includes('certificate'))
+    return t('login.error_ssl');
+  if (message.toLowerCase().includes('cors') || message.toLowerCase().includes('cross-origin'))
+    return t('login.error_cors');
   return withHttpStatus(t('login.error_invalid'));
 }
 
 const IconSun = ({ size = 17 }: { size?: number }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round">
+  <svg
+    width={size}
+    height={size}
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="1.7"
+    strokeLinecap="round"
+  >
     <circle cx="12" cy="12" r="4" />
     <path d="M12 2v2M12 20v2M4.93 4.93l1.42 1.42M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.42-1.42M17.66 6.34l1.41-1.41" />
   </svg>
 );
 
 const IconMoon = ({ size = 17 }: { size?: number }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+  <svg
+    width={size}
+    height={size}
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="1.7"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
     <path d="M21 12.8A9 9 0 1 1 11.2 3 7 7 0 0 0 21 12.8Z" />
   </svg>
 );
@@ -64,9 +85,18 @@ const IconMoon = ({ size = 17 }: { size?: number }) => (
 function BrandMark() {
   return (
     <span className={styles.brandMark} aria-hidden="true">
-      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-        <path d="M16.5 8a6 6 0 1 0 0 8" />
-        <path d="M7 12h7" />
+      <svg
+        width="22"
+        height="22"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.9"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
+        <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
+        <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
       </svg>
     </span>
   );
@@ -86,6 +116,7 @@ export function LoginPage() {
   const setTheme = useThemeStore((state) => state.setTheme);
   const language = useLanguageStore((state) => state.language);
   const setLanguage = useLanguageStore((state) => state.setLanguage);
+  const showActionFeedback = useNotificationStore((state) => state.showActionFeedback);
 
   const detectedBase = useMemo(() => detectApiBaseFromLocation(), []);
   const apiBase = useMemo(() => storedApiBase || detectedBase, [storedApiBase, detectedBase]);
@@ -96,6 +127,7 @@ export function LoginPage() {
   const [error, setError] = useState('');
   const [showSplash, setShowSplash] = useState(true);
   const [autoLoginSuccess, setAutoLoginSuccess] = useState(false);
+  const [loginSucceeded, setLoginSucceeded] = useState(false);
 
   useEffect(() => {
     let active = true;
@@ -118,20 +150,40 @@ export function LoginPage() {
     const nextBase = normalizeApiBase(apiBase);
     const nextKey = managementKey.trim();
     if (!nextBase || !nextKey) {
-      setError(t('login.error_required'));
+      const message = t('login.error_required');
+      setError(message);
+      showActionFeedback({ variant: 'error', title: t('login.failed_title'), message });
       return;
     }
     setLoading(true);
     setError('');
     try {
       await login({ apiBase: nextBase, managementKey: nextKey, rememberPassword });
-      navigate(redirectPath, { replace: true });
+      setLoginSucceeded(true);
+      showActionFeedback({
+        variant: 'success',
+        title: t('login.success_title'),
+        message: t('login.success_message'),
+        autoCloseMs: 1800,
+      });
+      window.setTimeout(() => navigate(redirectPath, { replace: true }), 950);
     } catch (submitError) {
-      setError(getLocalizedErrorMessage(submitError, t));
+      const message = getLocalizedErrorMessage(submitError, t);
+      setError(message);
+      showActionFeedback({ variant: 'error', title: t('login.failed_title'), message });
     } finally {
       setLoading(false);
     }
-  }, [apiBase, login, managementKey, navigate, redirectPath, rememberPassword, t]);
+  }, [
+    apiBase,
+    login,
+    managementKey,
+    navigate,
+    redirectPath,
+    rememberPassword,
+    showActionFeedback,
+    t,
+  ]);
 
   const handleSubmitKeyDown = useCallback(
     (event: KeyboardEvent<HTMLInputElement>) => {
@@ -143,10 +195,11 @@ export function LoginPage() {
     [handleSubmit]
   );
 
-  if (isAuthenticated) return <Navigate to={redirectPath} replace />;
+  if (isAuthenticated && !loginSucceeded) return <Navigate to={redirectPath} replace />;
 
   return (
     <div className={styles.screen}>
+      <div className={styles.wallpaper} aria-hidden="true" />
       <div className={styles.controls}>
         <button
           type="button"
@@ -166,12 +219,44 @@ export function LoginPage() {
           aria-label={t('language.switch')}
         >
           {LANGUAGE_ORDER.map((lang) => (
-            <option key={lang} value={lang}>{t(LANGUAGE_LABEL_KEYS[lang])}</option>
+            <option key={lang} value={lang}>
+              {t(LANGUAGE_LABEL_KEYS[lang])}
+            </option>
           ))}
         </select>
       </div>
 
       <main className={styles.main}>
+        <section className={styles.intro}>
+          <div className={styles.introBrand}>
+            <BrandMark />
+            <span>CLI Proxy API</span>
+          </div>
+          <h1>{t('splash.subtitle')}</h1>
+          <div className={styles.protocols} aria-hidden="true">
+            <span className={styles.protocolChip}>
+              <i className={styles.protocolDotOpenai} />
+              OpenAI
+            </span>
+            <span className={styles.protocolChip}>
+              <i className={styles.protocolDotClaude} />
+              Claude
+            </span>
+            <span className={styles.protocolChip}>
+              <i className={styles.protocolDotGemini} />
+              Gemini
+            </span>
+            <span className={styles.protocolChip}>
+              <i className={styles.protocolDotCodex} />
+              Codex
+            </span>
+          </div>
+          <div className={styles.introMeta}>
+            <span>Management API v8</span>
+            <span>Local deployment</span>
+          </div>
+        </section>
+
         <div className={styles.card}>
           <div className={styles.brandBlock}>
             <BrandMark />
@@ -185,15 +270,15 @@ export function LoginPage() {
             <div className={styles.splash}>
               <h1>{autoLoginSuccess ? t('common.connected_status') : t('splash.title')}</h1>
               <p>{t('splash.subtitle')}</p>
-              <div className={styles.loader}><span /></div>
+              <div className={styles.loader}>
+                <span />
+              </div>
             </div>
           ) : (
             <>
               <div className={styles.formIntro}>
                 <h1>{t('login.submit_button')}</h1>
-                <p>{t('login.subtitle')}</p>
               </div>
-
 
               <label className={styles.field}>
                 <span>{t('login.management_key_label')}</span>
@@ -211,7 +296,11 @@ export function LoginPage() {
                   <button
                     type="button"
                     onClick={() => setShowKey((value) => !value)}
-                    aria-label={showKey ? t('login.hide_key', { defaultValue: 'Hide key' }) : t('login.show_key', { defaultValue: 'Show key' })}
+                    aria-label={
+                      showKey
+                        ? t('login.hide_key', { defaultValue: 'Hide key' })
+                        : t('login.show_key', { defaultValue: 'Show key' })
+                    }
                   >
                     {showKey ? <IconEyeOff size={17} /> : <IconEye size={17} />}
                   </button>
@@ -228,7 +317,12 @@ export function LoginPage() {
                 <span>{t('login.remember_password_label')}</span>
               </label>
 
-              <button type="button" className={styles.submitButton} onClick={() => void handleSubmit()} disabled={loading}>
+              <button
+                type="button"
+                className={styles.submitButton}
+                onClick={() => void handleSubmit()}
+                disabled={loading}
+              >
                 <span>{loading ? t('login.submitting') : t('login.submit_button')}</span>
               </button>
 

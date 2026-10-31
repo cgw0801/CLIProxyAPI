@@ -1,0 +1,273 @@
+@use '../../styles/variables' as *;
+
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 3200;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: rgb(8 10 16 / 0.42);
+  backdrop-filter: blur(14px) saturate(140%);
+  animation: feedback-fade 220ms var(--ease-out-strong) both;
+}
+
+.card {
+  position: relative;
+  display: flex;
+  width: min(390px, 100%);
+  flex-direction: column;
+  align-items: center;
+  overflow: hidden;
+  padding: 38px 32px 28px;
+  border: 1px solid var(--card-line);
+  border-radius: 28px;
+  background: var(--floating-surface);
+  box-shadow: var(--floating-shadow);
+  text-align: center;
+  animation: feedback-pop 520ms var(--bounce) both;
+}
+
+.halo {
+  position: absolute;
+  top: -64px;
+  left: 50%;
+  width: 230px;
+  height: 230px;
+  border-radius: 50%;
+  background: radial-gradient(circle, var(--accent-soft-2), transparent 68%);
+  opacity: 0.85;
+  pointer-events: none;
+  transform: translateX(-50%);
+}
+
+.success .halo {
+  background: radial-gradient(circle, var(--ok-soft), transparent 68%);
+}
+
+.error .halo {
+  background: radial-gradient(circle, var(--bad-soft), transparent 68%);
+}
+
+.iconWrap {
+  position: relative;
+  display: grid;
+  width: 92px;
+  height: 92px;
+  place-items: center;
+  margin-bottom: 20px;
+  border-radius: 50%;
+}
+
+.success .iconWrap {
+  background: var(--ok-soft);
+  box-shadow: inset 0 0 0 1px var(--ok-line);
+  color: var(--ok-text);
+}
+
+.error .iconWrap {
+  background: var(--bad-soft);
+  box-shadow: inset 0 0 0 1px var(--bad-line);
+  color: var(--bad-text);
+}
+
+.iconWrap::before {
+  position: absolute;
+  inset: -13px;
+  border: 1px solid currentColor;
+  border-radius: inherit;
+  content: '';
+  opacity: 0;
+  animation: feedback-halo 1.15s var(--ease-out-strong) 120ms both;
+}
+
+.mark {
+  width: 62px;
+  height: 62px;
+  overflow: visible;
+}
+
+.circle,
+.tick,
+.cross {
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.circle {
+  stroke-width: 2.6;
+  stroke-dasharray: 158;
+  stroke-dashoffset: 158;
+  animation: feedback-draw 520ms var(--ease-out-strong) 80ms forwards;
+}
+
+.tick {
+  stroke-width: 3.4;
+  stroke-dasharray: 46;
+  stroke-dashoffset: 46;
+  animation: feedback-draw 360ms var(--ease-out-strong) 420ms forwards;
+}
+
+.cross {
+  stroke-width: 3.2;
+  stroke-dasharray: 52;
+  stroke-dashoffset: 52;
+  animation: feedback-draw 320ms var(--ease-out-strong) 360ms forwards;
+}
+
+.title {
+  position: relative;
+  margin: 0;
+  color: var(--text-primary);
+  font-family: $font-display;
+  font-size: 23px;
+  font-weight: 680;
+  letter-spacing: -0.03em;
+  line-height: 1.2;
+}
+
+.message {
+  position: relative;
+  max-width: 300px;
+  margin: 9px 0 0;
+  color: var(--text-secondary);
+  font-size: 13.5px;
+  line-height: 1.7;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.detail {
+  position: relative;
+  max-width: 100%;
+  margin-top: 14px;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--surface-2);
+  color: var(--text-tertiary);
+  font-family: $font-mono;
+  font-size: 11px;
+  line-height: 1.55;
+  text-align: left;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.button {
+  position: relative;
+  width: 100%;
+  height: 43px;
+  margin-top: 26px;
+  border: 0;
+  border-radius: 12px;
+  background: var(--accent);
+  color: var(--on-accent);
+  font: inherit;
+  font-size: 13.5px;
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    background-color var(--fast) var(--ease-std),
+    transform var(--fast) var(--ease-std);
+
+  &:hover {
+    background: var(--accent-hover);
+  }
+
+  &:active {
+    transform: scale(0.985);
+  }
+}
+
+.error .button {
+  background: var(--bad);
+
+  &:hover {
+    background: color-mix(in srgb, var(--bad) 88%, black);
+  }
+}
+
+.progress {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 3px;
+  background: var(--ok);
+  transform-origin: left;
+  animation: feedback-progress linear both;
+}
+
+@keyframes feedback-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes feedback-pop {
+  0% {
+    opacity: 0;
+    transform: translateY(18px) scale(0.92);
+  }
+  62% {
+    opacity: 1;
+    transform: translateY(-2px) scale(1.015);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes feedback-halo {
+  0% {
+    opacity: 0.75;
+    transform: scale(0.55);
+  }
+  70% {
+    opacity: 0.25;
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.35);
+  }
+}
+
+@keyframes feedback-draw {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes feedback-progress {
+  from {
+    transform: scaleX(1);
+  }
+  to {
+    transform: scaleX(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .overlay,
+  .card,
+  .iconWrap::before,
+  .circle,
+  .tick,
+  .cross,
+  .progress {
+    animation: none;
+  }
+
+  .circle,
+  .tick,
+  .cross {
+    stroke-dashoffset: 0;
+  }
+}

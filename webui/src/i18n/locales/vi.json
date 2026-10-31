@@ -1,5 +1,7 @@
 {
   "common": {
+    "search": "Tìm kiếm trang",
+    "no_results": "Không có kết quả phù hợp",
     "login": "Đăng nhập",
     "logout": "Đăng xuất",
     "back": "Quay lại",
@@ -66,6 +68,9 @@
   },
   "login": {
     "subtitle": "Vui lòng nhập thông tin kết nối để truy cập giao diện quản lý",
+    "success_title": "Đăng nhập thành công",
+    "success_message": "Đã kết nối dịch vụ quản lý. Đang chuyển đến bảng điều khiển.",
+    "failed_title": "Đăng nhập thất bại",
     "connection_current": "URL hiện tại",
     "connection_auto_hint": "Hệ thống sẽ tự động dùng URL hiện tại để kết nối",
     "custom_connection_label": "URL kết nối tùy chỉnh:",
@@ -91,7 +96,9 @@
   },
   "header": {
     "refresh_all": "Làm mới tất cả",
-    "logout": "Đăng xuất"
+    "logout": "Đăng xuất",
+    "logout_success_title": "Đã đăng xuất",
+    "logout_success_message": "Kết nối bảng điều khiển quản trị đã được ngắt an toàn."
   },
   "connection": {
     "status": "Trạng thái kết nối:"
@@ -1812,7 +1819,7 @@
       "editEyebrow": "Chỉnh sửa",
       "name": "Tên",
       "note": "Ghi chú",
-      "notePlaceholder": "Nhãn tùy chọn cho nhà cung cấp này",
+      "notePlaceholder": "Dùng để nhận diện nhà cung cấp này",
       "apiKey": "API key",
       "apiKeyCreatePlaceholder": "Nhập API key",
       "apiKeyEditPlaceholder": "Để trống nếu không đổi",
@@ -1873,6 +1880,7 @@
       "experimentalCchSigningHint": "Ký body /v1/messages Claude đã cloak cuối cùng bằng CCH",
       "validation": {
         "nameRequired": "Tên là bắt buộc",
+        "noteRequired": "Ghi chú là bắt buộc",
         "apiKeyRequired": "Cần ít nhất một API key",
         "baseUrlRequired": "Base URL là bắt buộc",
         "weightInteger": "Trọng số điều phối phải là số nguyên",

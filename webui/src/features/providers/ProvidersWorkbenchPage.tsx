@@ -111,7 +111,7 @@ const getResourceRecentSuccess = (
 export function ProvidersWorkbenchPage() {
   const { t, i18n } = useTranslation();
   const connectionStatus = useAuthStore((s) => s.connectionStatus);
-  const { showNotification, showConfirmation } = useNotificationStore();
+  const { showNotification, showConfirmation, showActionFeedback } = useNotificationStore();
 
   const workbench = useProviderWorkbench();
   const [uiState, setUiState] = useState<ProvidersWorkbenchUiState>(readProvidersWorkbenchUiState);
@@ -383,14 +383,24 @@ export function ProvidersWorkbenchPage() {
   );
 
   const handleCreated = useCallback(() => {
-    showNotification(t('providersPage.toast.created'), 'success');
     closeSheet();
-  }, [closeSheet, showNotification, t]);
+    showActionFeedback({
+      variant: 'success',
+      title: t('common.success'),
+      message: t('providersPage.toast.created'),
+      autoCloseMs: 1700,
+    });
+  }, [closeSheet, showActionFeedback, t]);
 
   const handleUpdated = useCallback(() => {
-    showNotification(t('providersPage.toast.updated'), 'success');
     closeSheet();
-  }, [closeSheet, showNotification, t]);
+    showActionFeedback({
+      variant: 'success',
+      title: t('common.success'),
+      message: t('providersPage.toast.updated'),
+      autoCloseMs: 1700,
+    });
+  }, [closeSheet, showActionFeedback, t]);
 
   // 加载状态
   if (!workbench.snapshot && workbench.isPending) {

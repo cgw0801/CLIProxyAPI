@@ -101,6 +101,7 @@ export function useConfigDocument({
   const { t } = useTranslation();
   const showNotification = useNotificationStore((state) => state.showNotification);
   const showConfirmation = useNotificationStore((state) => state.showConfirmation);
+  const showActionFeedback = useNotificationStore((state) => state.showActionFeedback);
 
   const [content, setContent] = useState('');
   const [loading, setLoading] = useState(true);
@@ -129,6 +130,18 @@ export function useConfigDocument({
   }, []);
 
   const isDirty = sourceDirty || visualDirty;
+
+  const showActionError = useCallback(
+    (message: string, detail?: string) => {
+      showActionFeedback({
+        variant: 'error',
+        title: t('common.error'),
+        message,
+        detail: detail || undefined,
+      });
+    },
+    [showActionFeedback, t]
+  );
 
   const loadConfig = useCallback(async () => {
     const operation = beginOperation();
@@ -258,7 +271,12 @@ export function useConfigDocument({
       }
 
       if (!operation.isCurrent()) return;
-      showNotification(t('config_management.save_success'), 'success');
+      showActionFeedback({
+        variant: 'success',
+        title: t('common.success'),
+        message: t('config_management.save_success'),
+        autoCloseMs: 1700,
+      });
       if (commercialModeChanged) {
         showNotification(t('notification.commercial_mode_restart_required'), 'warning');
       }
@@ -279,7 +297,7 @@ export function useConfigDocument({
         setDiffModalOpen(false);
         setRecoveryRequired(true);
         useConfigStore.getState().clearCache();
-        showNotification(`${t('config_management.precise_save_incomplete')}: ${message}`, 'error');
+        showActionError(t('config_management.precise_save_incomplete'), message);
         try {
           const latestYaml = await configFileApi.fetchConfigYaml();
           if (!operation.isCurrent()) return;
@@ -312,7 +330,7 @@ export function useConfigDocument({
           // Keep the primary mutation/readback error; the cache is already invalidated.
         }
       } else {
-        showNotification(`${t('notification.save_failed')}: ${message}`, 'error');
+        showActionError(t('notification.save_failed'), message);
       }
     } finally {
       if (operation.isCurrent()) setSaving(false);
@@ -329,6 +347,8 @@ export function useConfigDocument({
     recoverVisualDraft,
     sourceDirty,
     previewServerYaml,
+    showActionError,
+    showActionFeedback,
     showNotification,
     t,
   ]);
@@ -340,7 +360,7 @@ export function useConfigDocument({
       return;
     }
     if (mode === 'visual' && visualParseError) {
-      showNotification(t('config_management.visual_mode_save_blocked'), 'error');
+      showActionError(t('config_management.visual_mode_save_blocked'));
       return;
     }
 
@@ -352,13 +372,12 @@ export function useConfigDocument({
       if (mode === 'visual' || !sourceDirty) {
         const latestDocument = parseDocument(latestServerYaml);
         if (latestDocument.errors.length > 0) {
-          showNotification(
+          showActionError(
             t('config_management.visual_mode_latest_yaml_invalid', {
               message:
                 latestDocument.errors[0]?.message ??
                 t('config_management.visual_mode_save_blocked'),
-            }),
-            'error'
+            })
           );
           return;
         }
@@ -412,7 +431,7 @@ export function useConfigDocument({
           : err instanceof Error
             ? err.message
             : '';
-      showNotification(`${t('notification.save_failed')}: ${message}`, 'error');
+      showActionError(t('notification.save_failed'), message);
     } finally {
       if (operation.isCurrent()) setSaving(false);
     }
@@ -427,6 +446,7 @@ export function useConfigDocument({
     recoverVisualDraft,
     loadVisualValuesFromYaml,
     mode,
+    showActionError,
     showNotification,
     t,
     visualParseError,

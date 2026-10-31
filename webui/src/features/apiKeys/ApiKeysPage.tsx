@@ -33,7 +33,7 @@ const allowsAllModels = (models: string[]): boolean => models.includes(ALL_MODEL
 export function ApiKeysPage() {
   const { t } = useTranslation();
   const connectionStatus = useAuthStore((state) => state.connectionStatus);
-  const { showNotification, showConfirmation } = useNotificationStore();
+  const { showNotification, showConfirmation, showActionFeedback } = useNotificationStore();
   const [keys, setKeys] = useState<ClientApiKey[]>([]);
   const [models, setModels] = useState<AvailableModel[]>([]);
   const [loading, setLoading] = useState(true);
@@ -132,7 +132,11 @@ export function ApiKeysPage() {
 
   const handleSave = async () => {
     if (!draft.key.trim()) {
-      showNotification(t('api_keys.error_key_required'), 'error');
+      showActionFeedback({
+        variant: 'error',
+        title: t('common.error'),
+        message: t('api_keys.error_key_required'),
+      });
       return;
     }
     setSaving(true);
@@ -145,12 +149,21 @@ export function ApiKeysPage() {
         const created = await apiKeysApi.create(payload);
         setKeys((current) => [...current, created]);
       }
-      showNotification(editing ? t('api_keys.saved') : t('api_keys.created'), 'success');
       setEditorOpen(false);
       setEditing(null);
       setDraft(EMPTY_DRAFT);
+      showActionFeedback({
+        variant: 'success',
+        title: t('common.success'),
+        message: editing ? t('api_keys.saved') : t('api_keys.created'),
+        autoCloseMs: 1700,
+      });
     } catch (err) {
-      showNotification(err instanceof Error ? err.message : String(err), 'error');
+      showActionFeedback({
+        variant: 'error',
+        title: t('common.error'),
+        message: err instanceof Error ? err.message : String(err),
+      });
     } finally {
       setSaving(false);
     }

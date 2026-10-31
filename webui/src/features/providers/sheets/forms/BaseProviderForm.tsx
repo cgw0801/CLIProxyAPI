@@ -1,5 +1,6 @@
-import { useEffect, useId, useMemo, useState } from 'react';
+import { useEffect, useId, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useNotificationStore } from '@/stores';
 import {
   IconDownload,
   IconEye,
@@ -31,6 +32,7 @@ import type {
 } from '../../types';
 import { useConnectivityTest, type ConnectivityErrorMessages } from './useConnectivityTest';
 import { useModelDiscovery } from './useModelDiscovery';
+import { useInvalidFieldFeedback } from './useInvalidFieldFeedback';
 import { ModelDiscoveryPanel } from './ModelDiscoveryPanel';
 import { ConnectivityStatusIcon } from './ConnectivityStatusIcon';
 import { ApiKeyEntriesEditor } from './ApiKeyEntriesEditor';
@@ -68,6 +70,8 @@ const XAI_API_BASE_URL = 'https://api.x.ai/v1';
 
 const stripDisableAllRule = (list?: string[]): string[] =>
   (list ?? []).filter((s) => s.trim() !== '*');
+
+type ValidationIssue = { message: string; field?: string };
 
 const formatJsonObject = (value?: Record<string, unknown>): string => {
   if (!value || Object.keys(value).length === 0) return '';
@@ -122,7 +126,7 @@ function buildInitialForm(
     return {
       apiKey: '',
       name: cfg.name ?? '',
-      note: cfg.note ?? '',
+      note: cfg.note?.trim() || cfg.name || '',
       baseUrl: cfg.baseUrl ?? '',
       proxyUrl: '',
       prefix: cfg.prefix ?? '',
@@ -231,8 +235,11 @@ export function BaseProviderForm({
   onDirtyChange,
 }: BaseProviderFormProps) {
   const { t } = useTranslation();
+  const { showNotification } = useNotificationStore();
   const descriptor = PROVIDER_DESCRIPTORS[brand];
   const fid = useId();
+  const formRef = useRef<HTMLFormElement | null>(null);
+  const { activeField, highlightInvalidField } = useInvalidFieldFeedback(formRef);
   const [form, setForm] = useState<ProviderEntryFormInput>(() =>
     buildInitialForm(brand, resource, mode)
   );
@@ -377,45 +384,62 @@ export function BaseProviderForm({
     }));
   };
 
-  const validate = (): string | null => {
+  const validate = (): ValidationIssue | null => {
     const modelError = validateModelOptions(form.models);
-    if (modelError) return t(modelError);
+    if (modelError) return { message: t(modelError), field: 'models' };
     if (form.runtimePolicy) {
       const policyError = validateRuntimePolicy(
         form.runtimePolicy,
         descriptor.supportsRequestScopedErrors
       );
-      if (policyError) return t(policyError);
+      if (policyError) return { message: t(policyError), field: 'runtimePolicy' };
     }
-    if (descriptor.supportsName && !form.name.trim()) {
-      return t('providersPage.form.validation.nameRequired');
+    if (!(form.note ?? '').trim() && (mode === 'create' || brand === 'openaiCompatibility')) {
+      return { message: t('providersPage.form.validation.noteRequired'), field: 'note' };
     }
     if (descriptor.supportsApiKey && mode === 'create' && !form.apiKey.trim()) {
-      return t('providersPage.form.validation.apiKeyRequired');
+      return { message: t('providersPage.form.validation.apiKeyRequired'), field: 'apiKey' };
     }
     if (descriptor.baseUrlRequired && !form.baseUrl.trim()) {
-      return t('providersPage.form.validation.baseUrlRequired');
+      return { message: t('providersPage.form.validation.baseUrlRequired'), field: 'baseUrl' };
     }
-    const weights = [
-      ...(brand === 'openaiCompatibility'
-        ? (form.apiKeyEntries ?? []).map((entry) => entry.weight)
-        : []),
-      ...(brand !== 'openaiCompatibility' ? [form.weight] : []),
-    ];
-    if (weights.some((weight) => weight !== undefined && !Number.isSafeInteger(weight))) {
-      return t('providersPage.form.validation.weightInteger');
+    const invalidWeightField = (
+      predicate: (weight: number | undefined) => boolean
+    ): string | undefined => {
+      if (brand === 'openaiCompatibility') {
+        const index = (form.apiKeyEntries ?? []).findIndex((entry) => predicate(entry.weight));
+        return index >= 0 ? `apiKeyEntryWeight:${index}` : undefined;
+      }
+      return predicate(form.weight) ? 'weight' : undefined;
+    };
+    const integerWeightField = invalidWeightField(
+      (weight) => weight !== undefined && !Number.isSafeInteger(weight)
+    );
+    if (integerWeightField) {
+      return {
+        message: t('providersPage.form.validation.weightInteger'),
+        field: integerWeightField,
+      };
     }
-    if (weights.some((weight) => weight !== undefined && weight > MAX_CREDENTIAL_WEIGHT)) {
-      return t('providersPage.form.validation.weightMax', { max: MAX_CREDENTIAL_WEIGHT });
+    const maxWeightField = invalidWeightField(
+      (weight) => weight !== undefined && weight > MAX_CREDENTIAL_WEIGHT
+    );
+    if (maxWeightField) {
+      return {
+        message: t('providersPage.form.validation.weightMax', { max: MAX_CREDENTIAL_WEIGHT }),
+        field: maxWeightField,
+      };
     }
     return null;
   };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    const v = validate();
-    if (v) {
-      setError(v);
+    const issue = validate();
+    if (issue) {
+      setError(issue.message);
+      showNotification(issue.message, 'error');
+      highlightInvalidField(issue.field);
       return;
     }
     try {
@@ -500,7 +524,7 @@ export function BaseProviderForm({
   };
 
   return (
-    <form id={formId} className={styles.form} onSubmit={handleSubmit} noValidate>
+    <form ref={formRef} id={formId} className={styles.form} onSubmit={handleSubmit} noValidate>
       {/* 基础字段 */}
       <div className={styles.section}>
         {descriptor.supportsName ? (
@@ -518,7 +542,7 @@ export function BaseProviderForm({
           </div>
         ) : null}
 
-        <div className={styles.field}>
+        <div className={styles.field} data-provider-field="note">
           <label className={styles.label} htmlFor={`${fid}-note`}>
             {t('providersPage.form.note')}
           </label>
@@ -533,7 +557,7 @@ export function BaseProviderForm({
         </div>
 
         {descriptor.supportsApiKey ? (
-          <div className={styles.field}>
+          <div className={styles.field} data-provider-field="apiKey">
             <label className={styles.label} htmlFor={`${fid}-apiKey`}>
               {t('providersPage.form.apiKey')}
             </label>
@@ -578,7 +602,7 @@ export function BaseProviderForm({
         ) : null}
 
         {descriptor.supportsBaseUrl ? (
-          <div className={styles.field}>
+          <div className={styles.field} data-provider-field="baseUrl">
             <label className={styles.label} htmlFor={`${fid}-baseUrl`}>
               {t('providersPage.form.baseUrl')}
               {descriptor.baseUrlRequired ? (
@@ -653,7 +677,7 @@ export function BaseProviderForm({
         ) : null}
 
         {brand !== 'openaiCompatibility' ? (
-          <div className={styles.field}>
+          <div className={styles.field} data-provider-field="weight">
             <label className={styles.label} htmlFor={`${fid}-weight`}>
               {t('providersPage.form.weight')}
             </label>
@@ -755,12 +779,14 @@ export function BaseProviderForm({
         onChange={(patch) => setForm((current) => ({ ...current, ...patch }))}
         disabled={mutating}
       />
-      <RuntimePolicyEditor
-        value={form.runtimePolicy ?? readRuntimePolicy()}
-        onChange={(value) => updateField('runtimePolicy', value)}
-        disabled={mutating}
-        supportsErrors={descriptor.supportsRequestScopedErrors}
-      />
+      <div className={styles.fieldAnchor} data-provider-field="runtimePolicy">
+        <RuntimePolicyEditor
+          value={form.runtimePolicy ?? readRuntimePolicy()}
+          onChange={(value) => updateField('runtimePolicy', value)}
+          disabled={mutating}
+          supportsErrors={descriptor.supportsRequestScopedErrors}
+        />
+      </div>
 
       {/* 高级折叠区 */}
       {descriptor.supportsApiKeyEntries && form.apiKeyEntries ? (
@@ -773,6 +799,7 @@ export function BaseProviderForm({
         >
           <ApiKeyEntriesEditor
             entries={apiKeyEntries}
+            activeField={activeField}
             removeDisabled={actualApiKeyEntries.length === 0}
             mutating={mutating}
             statuses={connectivity.openaiStatuses}
@@ -867,7 +894,7 @@ export function BaseProviderForm({
           label={t('providersPage.form.modelsSection')}
           hint={`${existingModelNames.size}`}
         >
-          <div className={styles.entriesList}>
+          <div className={styles.entriesList} data-provider-field="models">
             {discovery.available ? (
               <div className={styles.entriesToolbar}>
                 <button

@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useId, useImperativeHandle, useState, type Ref } from 'react';
 import { useTranslation } from 'react-i18next';
+import { Modal } from '@/components/ui/Modal';
 import { Sheet } from '@/components/ui/Sheet';
 import { IconLoader2, IconPencil } from '@/components/ui/icons';
 import type { ProviderRecentUsageMap } from '@/components/providers/utils';
@@ -50,7 +51,7 @@ export function ProviderSheet({
   ref,
 }: ProviderSheetProps) {
   const { t } = useTranslation();
-  const { showConfirmation } = useNotificationStore();
+  const { showConfirmation, showActionFeedback } = useNotificationStore();
   const formId = useId();
   const [submitting, setSubmitting] = useState(false);
   const [isDirty, setIsDirty] = useState(false);
@@ -106,6 +107,12 @@ export function ProviderSheet({
             `providersPage.providerNames.${state.brand}`
           )}`
         : `${t('providersPage.detail.title')} · ${t(`providersPage.providerNames.${state.brand}`)}`;
+  const modalWidth =
+    descriptor.sheetSize === 'xl'
+      ? 'min(980px, 94vw)'
+      : descriptor.sheetSize === 'lg'
+        ? 'min(760px, 94vw)'
+        : 'min(640px, 94vw)';
 
   const handleCreate = useCallback(
     async (input: ProviderEntryFormInput) => {
@@ -114,11 +121,18 @@ export function ProviderSheet({
       try {
         await workbench.createProvider(state.brand, input);
         onCreated();
+      } catch (err) {
+        showActionFeedback({
+          variant: 'error',
+          title: t('common.error'),
+          message: err instanceof Error ? err.message : String(err),
+        });
+        throw err;
       } finally {
         setSubmitting(false);
       }
     },
-    [mutationDisabled, onCreated, state.brand, workbench]
+    [mutationDisabled, onCreated, showActionFeedback, state.brand, t, workbench]
   );
 
   const handleUpdate = useCallback(
@@ -128,11 +142,18 @@ export function ProviderSheet({
       try {
         await workbench.updateProvider(state.resource, input);
         onUpdated();
+      } catch (err) {
+        showActionFeedback({
+          variant: 'error',
+          title: t('common.error'),
+          message: err instanceof Error ? err.message : String(err),
+        });
+        throw err;
       } finally {
         setSubmitting(false);
       }
     },
-    [isDirty, mutationDisabled, onUpdated, state.resource, workbench]
+    [isDirty, mutationDisabled, onUpdated, showActionFeedback, state.resource, t, workbench]
   );
 
   const renderBody = () => {
@@ -225,6 +246,22 @@ export function ProviderSheet({
       </>
     );
 
+  if (state.mode === 'create') {
+    return (
+      <Modal
+        open={state.open}
+        onClose={onClose}
+        title={titleText}
+        width={modalWidth}
+        footer={footer}
+        closeDisabled={submitting}
+        confirmClose={confirmDiscardIfDirty}
+      >
+        {renderBody()}
+      </Modal>
+    );
+  }
+
   return (
     <Sheet
       open={state.open}
@@ -233,9 +270,7 @@ export function ProviderSheet({
       eyebrow={
         state.mode === 'detail'
           ? t('providersPage.detail.title')
-          : state.mode === 'create'
-            ? t('providersPage.form.createEyebrow')
-            : t('providersPage.form.editEyebrow')
+          : t('providersPage.form.editEyebrow')
       }
       title={titleText}
       description={t('providersPage.table.description', {

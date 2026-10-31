@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   IconChevronDown,
@@ -24,6 +24,7 @@ const isBlankEntry = (entry: ApiKeyEntryInput): boolean =>
 
 interface ApiKeyEntriesEditorProps {
   entries: ApiKeyEntryInput[];
+  activeField?: string | null;
   removeDisabled: boolean;
   mutating: boolean;
   statuses: ConnectivityStatus[];
@@ -38,6 +39,7 @@ interface ApiKeyEntriesEditorProps {
 
 export function ApiKeyEntriesEditor({
   entries,
+  activeField,
   removeDisabled,
   mutating,
   statuses,
@@ -54,6 +56,15 @@ export function ApiKeyEntriesEditor({
   );
   const [showPasswords, setShowPasswords] = useState<Set<number>>(new Set());
   const [showAll, setShowAll] = useState(false);
+
+  useEffect(() => {
+    const prefix = 'apiKeyEntryWeight:';
+    if (!activeField?.startsWith(prefix)) return;
+    const index = Number(activeField.slice(prefix.length));
+    if (!Number.isInteger(index) || index < 0) return;
+    setExpandedIdx(index);
+    if (index >= COLLAPSED_LIMIT) setShowAll(true);
+  }, [activeField]);
 
   const togglePasswordVisibility = (idx: number) => {
     setShowPasswords((prev) => {
@@ -238,7 +249,7 @@ export function ApiKeyEntriesEditor({
                     placeholder="http://127.0.0.1:7890"
                   />
                 </div>
-                <div className={styles.field}>
+                <div className={styles.field} data-provider-field={`apiKeyEntryWeight:${idx}`}>
                   <label className={styles.label}>{t('providersPage.form.weight')}</label>
                   <input
                     className={styles.input}

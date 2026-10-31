@@ -200,7 +200,7 @@ const buildOpenAIConfig = (
 
   return {
     ...(existing ?? {}),
-    name: input.name.trim(),
+    name: (input.note ?? '').trim() || input.name.trim(),
     note: (input.note ?? '').trim() || undefined,
     baseUrl: input.baseUrl.trim(),
     prefix: input.prefix.trim() || undefined,

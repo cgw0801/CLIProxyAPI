@@ -166,7 +166,7 @@ export const PROVIDER_DESCRIPTORS: Record<ProviderBrand, ProviderDescriptor> = {
   openaiCompatibility: {
     id: 'openaiCompatibility',
     supportsRequestScopedErrors: true,
-    supportsName: true,
+    supportsName: false,
     supportsApiKey: false,
     supportsDisabled: true,
     supportsBaseUrl: true,

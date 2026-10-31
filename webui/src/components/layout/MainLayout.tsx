@@ -2,28 +2,13 @@ import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react
 import { NavLink, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { MainRoutes } from '@/router/MainRoutes';
-import { useAuthStore, useConfigStore, useLanguageStore, useThemeStore } from '@/stores';
+import { useAuthStore, useConfigStore, useLanguageStore, useNotificationStore, useThemeStore } from '@/stores';
 import { triggerHeaderRefresh } from '@/hooks/useHeaderRefresh';
 import { LANGUAGE_LABEL_KEYS, LANGUAGE_ORDER } from '@/utils/constants';
 import { isSupportedLanguage } from '@/utils/language';
-
-interface NavItem {
-  path: string;
-  labelKey: string;
-}
-
-const NAV_ITEMS: NavItem[] = [
-  { path: '/', labelKey: 'nav.dashboard' },
-  { path: '/api-keys', labelKey: 'nav.api_keys' },
-  { path: '/ai-providers', labelKey: 'nav.ai_providers' },
-  { path: '/oauth', labelKey: 'nav.oauth' },
-  { path: '/auth-files', labelKey: 'nav.auth_files' },
-  { path: '/quota', labelKey: 'nav.quota_management' },
-  { path: '/config', labelKey: 'nav.config_management' },
-  { path: '/logs', labelKey: 'nav.logs' },
-  { path: '/monitoring', labelKey: 'nav.monitoring' },
-  { path: '/system', labelKey: 'nav.system_info' },
-];
+import { IconRefreshCw, IconSearch } from '@/components/ui/icons';
+import { CommandPalette } from './CommandPalette';
+import { activeNavItem, isNavItemActive, NAV_GROUPS, type NavGroup } from './navigation';
 
 const IconSun = ({ size = 17 }: { size?: number }) => (
   <svg
@@ -52,22 +37,6 @@ const IconMoon = ({ size = 17 }: { size?: number }) => (
     strokeLinejoin="round"
   >
     <path d="M21 12.8A9 9 0 1 1 11.2 3 7 7 0 0 0 21 12.8Z" />
-  </svg>
-);
-
-const IconRefresh = ({ size = 17 }: { size?: number }) => (
-  <svg
-    width={size}
-    height={size}
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="1.7"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-  >
-    <path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8" />
-    <path d="M21 3v5h-5" />
   </svg>
 );
 
@@ -102,36 +71,88 @@ const IconMenu = ({ size = 19 }: { size?: number }) => (
   </svg>
 );
 
-const IconClose = ({ size = 19 }: { size?: number }) => (
-  <svg
-    width={size}
-    height={size}
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="1.7"
-    strokeLinecap="round"
-  >
-    <path d="m6 6 12 12M18 6 6 18" />
-  </svg>
-);
-
 function BrandMark() {
   return (
     <span className="app-brand-mark" aria-hidden="true">
       <svg
-        width="16"
-        height="16"
+        width="19"
+        height="19"
         viewBox="0 0 24 24"
         fill="none"
         stroke="currentColor"
-        strokeWidth="2.1"
+        strokeWidth="1.9"
         strokeLinecap="round"
+        strokeLinejoin="round"
       >
-        <path d="M16.5 8a6 6 0 1 0 0 8" />
-        <path d="M7 12h7" />
+        <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
+        <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
       </svg>
     </span>
+  );
+}
+
+function NavGroupSection({ group }: { group: NavGroup }) {
+  const { t } = useTranslation();
+  const location = useLocation();
+  const navRef = useRef<HTMLElement | null>(null);
+  const [indicator, setIndicator] = useState({ y: 0, h: 0, visible: false, animated: false });
+
+  const measure = useCallback(() => {
+    const active = navRef.current?.querySelector<HTMLElement>('[data-nav-active="true"]');
+    if (!active) {
+      setIndicator((current) => ({ ...current, visible: false }));
+      return;
+    }
+    setIndicator((current) => ({
+      ...current,
+      y: active.offsetTop,
+      h: active.offsetHeight,
+      visible: true,
+    }));
+  }, []);
+
+  useLayoutEffect(() => {
+    measure();
+    const frame = requestAnimationFrame(() =>
+      setIndicator((current) => ({ ...current, animated: true }))
+    );
+    return () => cancelAnimationFrame(frame);
+  }, [location.pathname, measure]);
+
+  useEffect(() => {
+    window.addEventListener('resize', measure);
+    return () => window.removeEventListener('resize', measure);
+  }, [measure]);
+
+  return (
+    <div className="app-nav-group">
+      <span className="app-nav-label">{t(group.labelKey)}</span>
+      <nav ref={navRef} className="app-nav" aria-label={t(group.labelKey)}>
+        <span
+          className={`app-nav-indicator${indicator.visible ? ' is-visible' : ''}${indicator.animated ? ' is-animated' : ''}`}
+          style={{ transform: `translateY(${indicator.y}px)`, height: `${indicator.h}px` }}
+          aria-hidden="true"
+        />
+        {group.items.map((item) => {
+          const active = isNavItemActive(item.path, location.pathname);
+          return (
+            <NavLink
+              key={item.path}
+              to={item.path}
+              end={item.path === '/'}
+              className={() => `app-nav-link${active ? ' is-active' : ''}`}
+              data-nav-active={active ? 'true' : undefined}
+              aria-current={active ? 'page' : undefined}
+            >
+              <span className="app-nav-icon">
+                <item.icon size={17} />
+              </span>
+              <span className="app-nav-text">{t(item.labelKey)}</span>
+            </NavLink>
+          );
+        })}
+      </nav>
+    </div>
   );
 }
 
@@ -140,13 +161,16 @@ export function MainLayout() {
   const location = useLocation();
   const logout = useAuthStore((state) => state.logout);
   const connectionStatus = useAuthStore((state) => state.connectionStatus);
+  const serverVersion = useAuthStore((state) => state.serverVersion);
   const fetchConfig = useConfigStore((state) => state.fetchConfig);
   const resolvedTheme = useThemeStore((state) => state.resolvedTheme);
   const setTheme = useThemeStore((state) => state.setTheme);
   const language = useLanguageStore((state) => state.language);
   const setLanguage = useLanguageStore((state) => state.setLanguage);
+  const showActionFeedback = useNotificationStore((state) => state.showActionFeedback);
 
   const [navOpen, setNavOpen] = useState(false);
+  const [paletteOpen, setPaletteOpen] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const mainRef = useRef<HTMLElement | null>(null);
 
@@ -162,6 +186,17 @@ export function MainLayout() {
     mainRef.current?.scrollTo({ top: 0, left: 0, behavior: 'auto' });
   }, [location.pathname]);
 
+  useEffect(() => {
+    const handleShortcut = (event: KeyboardEvent) => {
+      if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'k') {
+        event.preventDefault();
+        setPaletteOpen((open) => !open);
+      }
+    };
+    window.addEventListener('keydown', handleShortcut);
+    return () => window.removeEventListener('keydown', handleShortcut);
+  }, []);
+
   const handleRefresh = useCallback(async () => {
     setRefreshing(true);
     try {
@@ -175,6 +210,16 @@ export function MainLayout() {
     setTheme(resolvedTheme === 'dark' ? 'light' : 'dark');
   }, [resolvedTheme, setTheme]);
 
+  const handleLogout = useCallback(() => {
+    showActionFeedback({
+      variant: 'success',
+      title: t('header.logout_success_title'),
+      message: t('header.logout_success_message'),
+      autoCloseMs: 1600,
+    });
+    logout();
+  }, [logout, showActionFeedback, t]);
+
   const statusLabel = t(
     connectionStatus === 'connected'
       ? 'common.connected'
@@ -183,61 +228,96 @@ export function MainLayout() {
         : 'common.disconnected'
   );
 
-  const navLinks = NAV_ITEMS.map((item) => (
-    <NavLink
-      key={item.path}
-      to={item.path}
-      end={item.path === '/'}
-      className={({ isActive }) => 'app-nav-link' + (isActive ? ' is-active' : '')}
-    >
-      {t(item.labelKey)}
-    </NavLink>
-  ));
-
-  const mobileNavLinks = NAV_ITEMS.map((item) => (
-    <NavLink
-      key={item.path}
-      to={item.path}
-      end={item.path === '/'}
-      className={({ isActive }) => 'app-mobile-link' + (isActive ? ' is-active' : '')}
-      onClick={() => setNavOpen(false)}
-    >
-      {t(item.labelKey)}
-    </NavLink>
-  ));
+  const currentNavItem = activeNavItem(location.pathname);
+  const currentPageLabel = currentNavItem ? t(currentNavItem.labelKey) : 'CLI Proxy';
+  const versionLabel = serverVersion?.trim()
+    ? `v${serverVersion.trim().replace(/^[vV]+/, '')}`
+    : 'dev';
 
   return (
     <div className="app-shell">
-      <header className="app-header">
-        <div className="app-header-inner">
+      <div className="app-wallpaper" aria-hidden="true" />
+
+      <aside className={`app-sidebar${navOpen ? ' is-open' : ''}`}>
+        <div className="app-sidebar-inner">
           <NavLink to="/" className="app-brand" aria-label="CLI Proxy API">
             <BrandMark />
             <span className="app-brand-copy">
               <span className="app-brand-name">CLI Proxy</span>
-              <span className="app-brand-sub">API Console</span>
+              <span className="app-brand-sub">Management Console</span>
             </span>
           </NavLink>
 
-          <nav className="app-nav" aria-label={t('sidebar.subtitle')}>
-            {navLinks}
-          </nav>
+          <button type="button" className="app-search" onClick={() => setPaletteOpen(true)}>
+            <IconSearch size={15} />
+            <span>{t('common.search')}</span>
+            <kbd>Ctrl K</kbd>
+          </button>
 
-          <div className="app-header-actions">
+          <div className="app-nav-groups">
+            {NAV_GROUPS.map((group) => (
+              <NavGroupSection key={group.labelKey} group={group} />
+            ))}
+          </div>
+
+          <div className="app-sidebar-foot">
+            <div className="app-account-card">
+              <span className="app-connection" title={statusLabel}>
+                <span
+                  className={`app-status-dot${connectionStatus === 'connected' ? ' is-live' : ''}`}
+                  aria-hidden="true"
+                />
+                <span className="app-connection-label">{statusLabel}</span>
+              </span>
+              <div className="app-version">
+                <span>Version</span>
+                <strong>{versionLabel}</strong>
+              </div>
+            </div>
+          </div>
+        </div>
+      </aside>
+
+      {navOpen ? (
+        <button
+          type="button"
+          className="app-sidebar-scrim"
+          onClick={() => setNavOpen(false)}
+          aria-label={t('common.close')}
+        />
+      ) : null}
+
+      <div className="app-stage">
+        <header className="app-stage-bar">
+          <button
+            type="button"
+            className="app-icon-button app-mobile-trigger"
+            onClick={() => setNavOpen(true)}
+            aria-label={t('sidebar.toggle_expand')}
+            aria-expanded={navOpen}
+          >
+            <IconMenu />
+          </button>
+          <div className="app-stage-title">
+            <small>CLI Proxy</small>
+            <strong>{currentPageLabel}</strong>
+          </div>
+          <div className="app-stage-actions">
             <span className="app-connection" title={statusLabel}>
               <span
-                className={'app-status-dot' + (connectionStatus === 'connected' ? ' is-live' : '')}
+                className={`app-status-dot${connectionStatus === 'connected' ? ' is-live' : ''}`}
                 aria-hidden="true"
               />
               <span className="app-connection-label">{statusLabel}</span>
             </span>
             <button
               type="button"
-              className={'app-icon-button' + (refreshing ? ' is-spinning' : '')}
+              className={`app-icon-button${refreshing ? ' is-spinning' : ''}`}
               onClick={() => void handleRefresh()}
               title={t('header.refresh_all')}
               aria-label={t('header.refresh_all')}
             >
-              <IconRefresh />
+              <IconRefreshCw size={16} />
             </button>
             <button
               type="button"
@@ -266,55 +346,25 @@ export function MainLayout() {
             <button
               type="button"
               className="app-icon-button app-logout"
-              onClick={logout}
+              onClick={handleLogout}
               title={t('header.logout')}
               aria-label={t('header.logout')}
             >
               <IconLogout />
             </button>
-            <button
-              type="button"
-              className="app-icon-button app-menu-button"
-              onClick={() => setNavOpen((open) => !open)}
-              aria-label={t('sidebar.toggle_expand')}
-              aria-expanded={navOpen}
-            >
-              {navOpen ? <IconClose /> : <IconMenu />}
-            </button>
           </div>
-        </div>
+        </header>
 
-        {navOpen ? (
-          <>
-            <button
-              type="button"
-              className="app-mobile-backdrop"
-              onClick={() => setNavOpen(false)}
-              aria-label={t('common.close')}
-            />
-            <div className="app-mobile-menu">
-              <div className="app-mobile-menu-head">
-                <span>{t('sidebar.subtitle')}</span>
-                <button
-                  type="button"
-                  className="app-icon-button"
-                  onClick={() => setNavOpen(false)}
-                  aria-label={t('common.close')}
-                >
-                  <IconClose />
-                </button>
-              </div>
-              {mobileNavLinks}
+        <main ref={mainRef} className="app-main">
+          <div className="app-content">
+            <div className="app-page" key={location.pathname}>
+              <MainRoutes />
             </div>
-          </>
-        ) : null}
-      </header>
+          </div>
+        </main>
+      </div>
 
-      <main ref={mainRef} className="app-main">
-        <div className="app-content">
-          <MainRoutes />
-        </div>
-      </main>
+      <CommandPalette open={paletteOpen} onClose={() => setPaletteOpen(false)} />
     </div>
   );
 }

@@ -19,6 +19,14 @@ interface ConfirmationOptions {
   onCancel?: () => void;
 }
 
+export interface ActionFeedbackOptions {
+  variant: 'success' | 'error';
+  title?: string;
+  message?: ReactNode;
+  detail?: string;
+  autoCloseMs?: number;
+}
+
 interface NotificationState {
   notifications: Notification[];
   confirmation: {
@@ -26,11 +34,17 @@ interface NotificationState {
     isLoading: boolean;
     options: ConfirmationOptions | null;
   };
+  actionFeedback: {
+    isOpen: boolean;
+    options: ActionFeedbackOptions | null;
+  };
   showNotification: (message: string, type?: NotificationType, duration?: number) => void;
   removeNotification: (id: string) => void;
   showConfirmation: (options: ConfirmationOptions) => void;
   hideConfirmation: () => void;
   setConfirmationLoading: (loading: boolean) => void;
+  showActionFeedback: (options: ActionFeedbackOptions) => void;
+  hideActionFeedback: () => void;
 }
 
 export const useNotificationStore = create<NotificationState>((set) => ({
@@ -38,6 +52,10 @@ export const useNotificationStore = create<NotificationState>((set) => ({
   confirmation: {
     isOpen: false,
     isLoading: false,
+    options: null,
+  },
+  actionFeedback: {
+    isOpen: false,
     options: null,
   },
 
@@ -91,5 +109,23 @@ export const useNotificationStore = create<NotificationState>((set) => ({
         isLoading: loading,
       },
     }));
+  },
+
+  showActionFeedback: (options) => {
+    set({
+      actionFeedback: {
+        isOpen: true,
+        options,
+      },
+    });
+  },
+
+  hideActionFeedback: () => {
+    set({
+      actionFeedback: {
+        isOpen: false,
+        options: null,
+      },
+    });
   },
 }));

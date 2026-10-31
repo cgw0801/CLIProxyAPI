@@ -1,6 +1,8 @@
-import { useMemo } from 'react';
+import { useMemo, type CSSProperties } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { CountUp } from '@/components/common/CountUp';
+import { IconCheckCircle2, IconKey, IconModelCluster, IconNetwork } from '@/components/ui/icons';
 import { useAuthStore } from '@/stores';
 import { useHeaderRefresh } from '@/hooks/useHeaderRefresh';
 import { formatCompactNumber, formatDateValue, formatPercent } from '@/utils/format';
@@ -58,23 +60,30 @@ export function DashboardPage() {
     {
       key: 'requests',
       label: t('dashboard.hero_requests_label'),
-      value: connected ? formatHeadline(traffic.total) : DASH,
+      value: connected ? traffic.total : null,
+      format: (value: number) => formatHeadline(Math.round(value)),
       hint: t('dashboard.hero_window_meta', { window: windowLabel }),
       meter: null,
       tone: undefined,
+      icon: IconNetwork,
+      accent: 'blue',
     },
     {
       key: 'success',
       label: t('dashboard.success_rate'),
-      value: traffic.successRate === null ? DASH : formatPercent(traffic.successRate),
+      value: traffic.successRate,
+      format: (value: number) => formatPercent(value),
       hint: t('dashboard.stat_success_hint', { total: traffic.total.toLocaleString() }),
       meter: traffic.successRate,
       tone: successRateTone,
+      icon: IconCheckCircle2,
+      accent: 'green',
     },
     {
       key: 'credentials',
       label: t('dashboard.stat_credentials'),
-      value: credentials ? credentials.total.toLocaleString() : DASH,
+      value: credentials ? credentials.total : null,
+      format: (value: number) => Math.round(value).toLocaleString(),
       hint: credentials
         ? t('dashboard.stat_credentials_hint', {
             active: credentials.active,
@@ -86,14 +95,19 @@ export function DashboardPage() {
           ? (credentials.active / credentials.total) * 100
           : null,
       tone: undefined,
+      icon: IconKey,
+      accent: 'violet',
     },
     {
       key: 'models',
       label: t('dashboard.stat_models'),
-      value: counts.models === null ? DASH : counts.models.toLocaleString(),
+      value: counts.models,
+      format: (value: number) => Math.round(value).toLocaleString(),
       hint: t('dashboard.stat_models_hint'),
       meter: null,
       tone: undefined,
+      icon: IconModelCluster,
+      accent: 'amber',
     },
   ];
 
@@ -126,11 +140,16 @@ export function DashboardPage() {
     <div className={styles.page}>
       <header className={styles.pageHeader}>
         <div className={styles.titleBlock}>
-          <h1>{t('nav.dashboard')}</h1>
-          <p>
+          <span className={styles.eyebrow}>
+            <span
+              className={`${styles.eyebrowDot}${connectionStatus === 'connected' ? ` ${styles.eyebrowDotLive}` : ''}`}
+              aria-hidden="true"
+            />
             {connectionLabel}
             {serverVersion ? ` · v${serverVersion.trim().replace(/^[vV]+/, '')}` : ''}
-          </p>
+          </span>
+          <h1>{t('nav.dashboard')}</h1>
+          <p>{t('dashboard.traffic_description', { window: windowLabel })}</p>
         </div>
         <div className={styles.headerActions}>
           <Link to="/logs" className={styles.secondaryButton}>
@@ -143,10 +162,25 @@ export function DashboardPage() {
       </header>
 
       <section className={styles.stats} aria-label={t('dashboard.stats_aria')}>
-        {statTiles.map((tile) => (
-          <article key={tile.key} className={styles.statCard}>
-            <span className={styles.statLabel}>{tile.label}</span>
-            <strong className={styles.statValue}>{tile.value}</strong>
+        {statTiles.map((tile, index) => (
+          <article
+            key={tile.key}
+            className={`${styles.statCard} ${styles[`accent${tile.accent[0].toUpperCase()}${tile.accent.slice(1)}`]}`}
+            style={{ '--enter-delay': `${index * 70}ms` } as CSSProperties}
+          >
+            <div className={styles.statTop}>
+              <span className={styles.statIcon}>
+                <tile.icon size={18} />
+              </span>
+              <span className={styles.statLabel}>{tile.label}</span>
+            </div>
+            <strong className={styles.statValue}>
+              {tile.value === null ? (
+                DASH
+              ) : (
+                <CountUp value={tile.value} format={tile.format} continuous />
+              )}
+            </strong>
             <span className={styles.statHint}>{tile.hint}</span>
             {tile.meter !== null && tile.meter !== undefined ? (
               <Meter
@@ -293,7 +327,10 @@ export function DashboardPage() {
                   <b>{credentials.unavailable.toLocaleString()}</b>
                 </li>
                 <li>
-                  <i className={`${styles.healthKey} ${styles.healthDisabled}`} aria-hidden="true" />
+                  <i
+                    className={`${styles.healthKey} ${styles.healthDisabled}`}
+                    aria-hidden="true"
+                  />
                   {t('dashboard.health_disabled')}
                   <b>{credentials.disabled.toLocaleString()}</b>
                 </li>

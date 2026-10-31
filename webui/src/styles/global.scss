@@ -10,33 +10,33 @@
 @use './layout.scss';
 
 body {
-  background-color: var(--bg-secondary);
+  background-color: var(--wall);
   color: var(--text-primary);
   font-size: 14px;
 }
 
 html {
-  background-color: var(--bg-secondary);
+  background-color: var(--wall);
 }
 
 ::selection {
-  background: var(--primary-color);
-  color: var(--primary-contrast);
+  background: var(--accent-soft-2);
+  color: var(--text-primary);
 }
 
 .app-content h1 {
   font-family: $font-display;
-  font-size: clamp(26px, 2.4vw, 32px);
-  font-weight: 600;
+  font-size: clamp(27px, 2.4vw, 34px);
+  font-weight: 650;
   line-height: 1.14;
-  letter-spacing: -0.045em;
+  letter-spacing: -0.03em;
 }
 
 .app-content h2 {
   font-family: $font-display;
   font-size: 17px;
-  font-weight: 600;
-  letter-spacing: -0.025em;
+  font-weight: 640;
+  letter-spacing: -0.015em;
 }
 
 .app-content h3 {
@@ -59,7 +59,7 @@ a:focus-visible,
 input:focus-visible,
 textarea:focus-visible,
 select:focus-visible {
-  outline: 2px solid var(--text-primary);
+  outline: 2px solid var(--accent);
   outline-offset: 2px;
 }
 
@@ -84,11 +84,16 @@ body.modal-open .content {
 ::-webkit-scrollbar-thumb {
   border: 3px solid transparent;
   border-radius: $radius-full;
-  background: var(--border-primary);
+  background: var(--line-strong);
   background-clip: padding-box;
 
   &:hover {
-    background: var(--border-hover);
+    background: var(--text-quaternary);
     background-clip: padding-box;
   }
+}
+
+* {
+  scrollbar-color: var(--line-strong) transparent;
+  scrollbar-width: thin;
 }

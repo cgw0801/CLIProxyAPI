@@ -1,5 +1,7 @@
 {
   "common": {
+    "search": "페이지 검색",
+    "no_results": "일치하는 결과가 없습니다",
     "login": "로그인",
     "logout": "로그아웃",
     "back": "뒤로",
@@ -66,6 +68,9 @@
   },
   "login": {
     "subtitle": "CLI Proxy API v8 이상 버전에 연결",
+    "success_title": "로그인 성공",
+    "success_message": "관리 서비스에 연결되었습니다. 대시보드로 이동합니다.",
+    "failed_title": "로그인 실패",
     "connection_current": "현재 URL",
     "connection_auto_hint": "시스템이 자동으로 현재 URL을 사용하여 연결합니다",
     "custom_connection_label": "사용자 지정 연결 URL:",
@@ -91,7 +96,9 @@
   },
   "header": {
     "refresh_all": "모두 새로 고침",
-    "logout": "로그아웃"
+    "logout": "로그아웃",
+    "logout_success_title": "로그아웃됨",
+    "logout_success_message": "관리 콘솔 연결이 안전하게 해제되었습니다."
   },
   "connection": {
     "status": "연결 상태:"
@@ -1936,7 +1943,7 @@
       "editEyebrow": "편집",
       "name": "이름",
       "note": "비고",
-      "notePlaceholder": "이 공급자를 식별하기 위한 선택 입력",
+      "notePlaceholder": "이 공급자를 식별하는 데 사용됩니다",
       "apiKey": "API 키",
       "apiKeyCreatePlaceholder": "API 키를 입력하세요",
       "apiKeyEditPlaceholder": "변경하지 않으려면 비워 두세요",
@@ -1999,6 +2006,7 @@
       "fingerprintProfileHint": "기본적으로 호출자의 프롬프트와 헤더를 유지하거나, Claude Code CLI 요청 지문을 사용하도록 선택합니다.",
       "validation": {
         "nameRequired": "이름은 필수입니다.",
+        "noteRequired": "메모는 필수입니다.",
         "apiKeyRequired": "API 키를 하나 이상 입력해야 합니다.",
         "baseUrlRequired": "기본 URL은 필수입니다.",
         "weightInteger": "스케줄링 가중치는 정수여야 합니다.",
