@@ -394,7 +394,7 @@ export function BaseProviderForm({
       );
       if (policyError) return { message: t(policyError), field: 'runtimePolicy' };
     }
-    if (!(form.note ?? '').trim() && (mode === 'create' || brand === 'openaiCompatibility')) {
+    if (!(form.note ?? '').trim()) {
       return { message: t('providersPage.form.validation.noteRequired'), field: 'note' };
     }
     if (descriptor.supportsApiKey && mode === 'create' && !form.apiKey.trim()) {

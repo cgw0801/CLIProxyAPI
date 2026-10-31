@@ -9,6 +9,7 @@ export interface ServerVersionInfo {
   commit: string;
   build_date: string;
   repository: string;
+  started_at?: string;
 }
 
 export interface ServerUpdateStatus {
@@ -27,9 +28,16 @@ export interface ServerUpdateResult {
   message: string;
 }
 
+export interface ServerRestartResult {
+  restarting: boolean;
+  message: string;
+}
+
 export const versionApi = {
   getVersion: () => apiClient.get<ServerVersionInfo>('/server/version'),
   checkUpdate: () => apiClient.get<ServerUpdateStatus>('/server/update'),
   applyUpdate: () =>
     apiClient.post<ServerUpdateResult>('/server/update', undefined, { timeout: 10 * 60 * 1000 }),
+  restartServer: () =>
+    apiClient.post<ServerRestartResult>('/server/restart', undefined, { timeout: 15 * 1000 }),
 };

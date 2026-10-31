@@ -89,6 +89,7 @@ retain the corresponding business operation's fields.
 | `/config/upstream/<provider>` | GET, PUT, PATCH, DELETE | Manage shared provider settings. |
 | `/server/latest-version` | GET | Get latest release information. |
 | `/server/version` | GET | Get the running server version and build metadata. |
+| `/server/restart` | POST | Restart the running server process with its current arguments. |
 | `/server/update` | GET, POST | Check for a server update or install the latest release. |
 | `/requests/api-call` | POST | Make an authenticated upstream call. |
 | `/routing/cooldown/reset` | POST | Clear credential cooldown. |
@@ -126,7 +127,7 @@ retain the corresponding business operation's fields.
 `GET /server/version` returns the running build metadata:
 
 ```json
-{"version":"0.0.2","commit":"none","build_date":"unknown","repository":"cgw0801/CLIProxyAPI"}
+{"version":"0.0.3","commit":"none","build_date":"unknown","repository":"cgw0801/CLIProxyAPI","started_at":"2026-10-31T06:06:31.1234567Z"}
 ```
 
 `GET /server/update` compares the running version with the latest GitHub release and returns `current_version`, `latest_version`, `update_available`, `can_update`, and the release URL. If the repository has not published a release yet, the current version is reported as latest.

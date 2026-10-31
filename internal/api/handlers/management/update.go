@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"net/http"
+	"os"
 	"strings"
 	"sync"
 	"time"
@@ -11,6 +12,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/router-for-me/CLIProxyAPI/v8/internal/buildinfo"
 	"github.com/router-for-me/CLIProxyAPI/v8/internal/managementasset"
+	"github.com/router-for-me/CLIProxyAPI/v8/internal/processrestart"
 	"github.com/router-for-me/CLIProxyAPI/v8/internal/selfupdate"
 	"github.com/router-for-me/CLIProxyAPI/v8/internal/util"
 	sdkconfig "github.com/router-for-me/CLIProxyAPI/v8/sdk/config"
@@ -23,13 +25,17 @@ const (
 	updateRestartDelay = 1500 * time.Millisecond
 )
 
-var serverUpdateMu sync.Mutex
+var (
+	serverLifecycleMu sync.Mutex
+	serverStartedAt   = time.Now().UTC()
+)
 
 type serverVersionResponse struct {
 	Version    string `json:"version"`
 	Commit     string `json:"commit"`
 	BuildDate  string `json:"build_date"`
 	Repository string `json:"repository"`
+	StartedAt  string `json:"started_at"`
 }
 
 type serverUpdateStatusResponse struct {
@@ -49,6 +55,7 @@ func (h *Handler) GetServerVersion(c *gin.Context) {
 		Commit:     buildinfo.Commit,
 		BuildDate:  buildinfo.BuildDate,
 		Repository: buildinfo.UpdateRepository,
+		StartedAt:  serverStartedAt.Format(time.RFC3339Nano),
 	})
 }
 
@@ -77,17 +84,50 @@ func (h *Handler) GetServerUpdate(c *gin.Context) {
 	c.JSON(http.StatusOK, response)
 }
 
+// RestartServer relaunches the current process with its existing arguments
+// after the HTTP response has been flushed.
+func (h *Handler) RestartServer(c *gin.Context) {
+	if !serverLifecycleMu.TryLock() {
+		c.JSON(http.StatusConflict, gin.H{
+			"error":   "server_operation_in_progress",
+			"message": "another server update or restart is already running",
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"restarting": true,
+		"message":    "server is restarting",
+	})
+	if flusher, ok := c.Writer.(http.Flusher); ok {
+		flusher.Flush()
+	}
+
+	go func() {
+		timer := time.NewTimer(updateRestartDelay)
+		defer timer.Stop()
+		<-timer.C
+		log.Info("management: restarting server")
+		if errRestart := processrestart.Restart(); errRestart != nil {
+			serverLifecycleMu.Unlock()
+			log.WithError(errRestart).Error("management: failed to restart server")
+			return
+		}
+		os.Exit(0)
+	}()
+}
+
 // ApplyServerUpdate downloads, verifies, installs the latest release, then
 // restarts the process after the HTTP response has been flushed.
 func (h *Handler) ApplyServerUpdate(c *gin.Context) {
-	if !serverUpdateMu.TryLock() {
+	if !serverLifecycleMu.TryLock() {
 		c.JSON(http.StatusConflict, gin.H{
 			"error":   "update_in_progress",
 			"message": "another server update is already running",
 		})
 		return
 	}
-	defer serverUpdateMu.Unlock()
+	defer serverLifecycleMu.Unlock()
 
 	service := h.newUpdateService(updateApplyTimeout)
 	ctx := c.Request.Context()

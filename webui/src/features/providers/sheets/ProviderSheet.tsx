@@ -246,7 +246,7 @@ export function ProviderSheet({
       </>
     );
 
-  if (state.mode === 'create') {
+  if (state.mode !== 'detail') {
     return (
       <Modal
         open={state.open}

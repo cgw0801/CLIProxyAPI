@@ -34,6 +34,9 @@ func TestGetServerVersion(t *testing.T) {
 	if response.Repository != buildinfo.UpdateRepository {
 		t.Fatalf("repository = %q, want %q", response.Repository, buildinfo.UpdateRepository)
 	}
+	if _, errParse := time.Parse(time.RFC3339Nano, response.StartedAt); errParse != nil {
+		t.Fatalf("started_at = %q, want RFC3339 timestamp: %v", response.StartedAt, errParse)
+	}
 }
 
 func TestNewUpdateServiceUsesManagementStaticDir(t *testing.T) {

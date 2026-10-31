@@ -31,6 +31,7 @@ func (s *Server) registerManagementV8Routes() {
 	v8.GET("/server/version", s.mgmt.GetServerVersion)
 	v8.GET("/server/update", s.mgmt.GetServerUpdate)
 	v8.POST("/server/update", s.mgmt.ApplyServerUpdate)
+	v8.POST("/server/restart", s.mgmt.RestartServer)
 	v8.POST("/requests/api-call", s.mgmt.APICall)
 	v8.POST("/routing/cooldown/reset", s.mgmt.ResetQuota)
 	v8.GET("/routing/model-definitions/:channel", s.mgmt.GetStaticModelDefinitions)

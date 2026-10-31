@@ -87,9 +87,9 @@ cp dist/management.html ../static/management.html
 
 ## 版本与更新
 
-当前应用版本为 `0.0.2`。管理面板的“中心信息”页会显示运行版本，并从 GitHub Releases 检查更新。
+当前应用版本为 `0.0.3`。管理面板的“中心信息”页会显示运行版本，并从 GitHub Releases 检查更新。
 
-推送 `v0.0.2` 这类标签会触发 `.github/workflows/release.yml`，发布 Linux amd64/arm64 安装包、`checksums.txt` 和 `management.html`。自动更新会先校验 SHA-256，再同时替换当前 Linux 可执行文件和内置的 `static/management.html` 管理面板。
+推送 `v0.0.3` 这类标签会触发 `.github/workflows/release.yml`，发布 Linux amd64/arm64 安装包、`checksums.txt` 和 `management.html`。自动更新会先校验 SHA-256，再同时替换当前 Linux 可执行文件和内置的 `static/management.html` 管理面板。
 
 自动更新适用于原生 Linux 部署。Docker 容器可以更新当前运行中的二进制，但重新创建容器后会恢复为镜像内的版本；Docker 部署请构建或拉取新镜像后重新创建容器。
 

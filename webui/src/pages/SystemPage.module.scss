@@ -80,6 +80,14 @@
   }
 }
 
+.sectionHeaderActions {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
 .statusGrid {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -517,15 +525,6 @@
   font-weight: 650;
   line-height: 1.1;
   letter-spacing: -0.03em;
-}
-
-.versionMeta {
-  overflow: hidden;
-  color: var(--text-quaternary);
-  font-family: $font-mono;
-  font-size: 10px;
-  text-overflow: ellipsis;
-  white-space: nowrap;
 }
 
 .versionDetails {

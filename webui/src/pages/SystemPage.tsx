@@ -59,9 +59,30 @@ const waitForVersion = async (
   return null;
 };
 
+const waitForServerRestart = async (
+  previousStartedAt: string | undefined,
+  attempts = 30
+): Promise<ServerVersionInfo | null> => {
+  await new Promise((resolve) => window.setTimeout(resolve, 2000));
+  for (let attempt = 0; attempt < attempts; attempt += 1) {
+    try {
+      const info = await versionApi.getVersion();
+      if (!previousStartedAt || (info.started_at && info.started_at !== previousStartedAt)) {
+        return info;
+      }
+    } catch {
+      // The service is still restarting; retry after the next interval.
+    }
+    if (attempt < attempts - 1) {
+      await new Promise((resolve) => window.setTimeout(resolve, 1000));
+    }
+  }
+  return null;
+};
+
 export function SystemPage() {
   const { t, i18n } = useTranslation();
-  const { showNotification } = useNotificationStore();
+  const { showNotification, showConfirmation } = useNotificationStore();
   const resolvedTheme = useThemeStore((state) => state.resolvedTheme);
   const auth = useAuthStore();
   const models = useModelsStore((state) => state.models);
@@ -81,6 +102,7 @@ export function SystemPage() {
   } | null>(null);
   const [checkingUpdate, setCheckingUpdate] = useState(false);
   const [updating, setUpdating] = useState(false);
+  const [restarting, setRestarting] = useState(false);
 
   const otherLabel = useMemo(
     () => (i18n.language?.toLowerCase().startsWith('zh') ? '其他' : 'Other'),
@@ -131,6 +153,7 @@ export function SystemPage() {
   };
 
   const checkForUpdates = async () => {
+    if (checkingUpdate || restarting || updating) return;
     if (auth.connectionStatus !== 'connected') {
       showNotification(t('notification.connection_required'), 'warning');
       return;
@@ -174,7 +197,7 @@ export function SystemPage() {
   };
 
   const applyUpdate = async () => {
-    if (!updateStatus?.update_available || updating) return;
+    if (!updateStatus?.update_available || updating || restarting) return;
     const expected = updateStatus.latest_version;
     setUpdating(true);
     setVersionMessage({
@@ -222,6 +245,60 @@ export function SystemPage() {
     }
   };
 
+  const restartServer = async () => {
+    if (restarting || updating) return;
+    setRestarting(true);
+    setVersionMessage({
+      type: 'muted',
+      message: t('system_info.version_restarting'),
+    });
+    try {
+      let previousStartedAt = versionInfo?.started_at;
+      if (!previousStartedAt) {
+        try {
+          previousStartedAt = (await versionApi.getVersion()).started_at;
+        } catch {
+          // The restart response below still surfaces connection failures.
+        }
+      }
+      await versionApi.restartServer();
+      const info = await waitForServerRestart(previousStartedAt);
+      if (!info) {
+        const message = t('system_info.version_restart_error');
+        setVersionMessage({ type: 'error', message });
+        showNotification(message, 'error');
+        return;
+      }
+      setVersionInfo(info);
+      setUpdateStatus(null);
+      setVersionMessage({
+        type: 'success',
+        message: t('system_info.version_restart_success'),
+      });
+      showNotification(t('system_info.version_restart_success'), 'success');
+      window.setTimeout(() => window.location.reload(), 1200);
+    } catch (err: unknown) {
+      const detail = err instanceof Error ? err.message : typeof err === 'string' ? err : '';
+      const suffix = detail ? `: ${detail}` : '';
+      const message = `${t('system_info.version_restart_error')}${suffix}`;
+      setVersionMessage({ type: 'error', message });
+      showNotification(message, 'error');
+    } finally {
+      setRestarting(false);
+    }
+  };
+
+  const confirmRestart = () => {
+    if (restarting || updating) return;
+    showConfirmation({
+      title: t('system_info.version_restart_confirm_title'),
+      message: t('system_info.version_restart_confirm_message'),
+      confirmText: t('system_info.version_restart_confirm_button'),
+      variant: 'danger',
+      onConfirm: restartServer,
+    });
+  };
+
   useEffect(() => {
     fetchModels();
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -266,26 +343,31 @@ export function SystemPage() {
             <h2>{t('system_info.version_title')}</h2>
             <p>{t('system_info.version_desc')}</p>
           </div>
-          <Button variant="secondary" size="sm" onClick={checkForUpdates} loading={checkingUpdate}>
-            {t('system_info.version_check_button')}
-          </Button>
+          <div className={styles.sectionHeaderActions}>
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={confirmRestart}
+              loading={restarting}
+              disabled={updating}
+            >
+              {t('system_info.version_restart_button')}
+            </Button>
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={checkForUpdates}
+              loading={checkingUpdate}
+              disabled={restarting || updating}
+            >
+              {t('system_info.version_check_button')}
+            </Button>
+          </div>
         </div>
         <div className={styles.versionCard}>
           <div className={styles.versionPrimary}>
             <span className={styles.versionLabel}>{t('system_info.version_current')}</span>
             <strong className={styles.versionNumber}>{displayVersion}</strong>
-            <span className={styles.versionMeta}>
-              {[
-                versionInfo?.commit && versionInfo.commit !== 'none'
-                  ? t('system_info.version_commit', { commit: versionInfo.commit })
-                  : '',
-                versionInfo?.build_date && versionInfo.build_date !== 'unknown'
-                  ? t('system_info.version_build_date', { date: versionInfo.build_date })
-                  : '',
-              ]
-                .filter(Boolean)
-                .join(' · ')}
-            </span>
           </div>
           <div className={styles.versionDetails}>
             {versionMessage ? (
@@ -300,7 +382,7 @@ export function SystemPage() {
                   size="sm"
                   onClick={applyUpdate}
                   loading={updating}
-                  disabled={!updateStatus.can_update}
+                  disabled={!updateStatus.can_update || restarting}
                 >
                   {t('system_info.version_update_button')}
                 </Button>

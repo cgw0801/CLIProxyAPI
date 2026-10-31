@@ -87,9 +87,9 @@ cp dist/management.html ../static/management.html
 
 ## Releases and Updates
 
-The current application version is `0.0.2`. The System page in the management panel shows the running version and checks GitHub Releases for updates.
+The current application version is `0.0.3`. The System page in the management panel shows the running version and checks GitHub Releases for updates.
 
-Pushing a tag such as `v0.0.2` runs `.github/workflows/release.yml` and publishes Linux amd64/arm64 archives, `checksums.txt`, and `management.html`. The in-place updater verifies the SHA-256 checksum before replacing the running Linux binary and its bundled `static/management.html` management panel.
+Pushing a tag such as `v0.0.3` runs `.github/workflows/release.yml` and publishes Linux amd64/arm64 archives, `checksums.txt`, and `management.html`. The in-place updater verifies the SHA-256 checksum before replacing the running Linux binary and its bundled `static/management.html` management panel.
 
 In-place updates apply to native Linux installs. Docker containers can install an update into the running container, but recreating the container from its image restores the image version; for durable Docker upgrades, build or pull a new image and recreate the container.
 
