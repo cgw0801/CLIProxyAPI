@@ -23,7 +23,7 @@ interface ModalProps {
   confirmClose?: () => boolean | Promise<boolean>;
 }
 
-const CLOSE_ANIMATION_DURATION = 350;
+const CLOSE_ANIMATION_DURATION = 280;
 
 export function Modal({
   open,

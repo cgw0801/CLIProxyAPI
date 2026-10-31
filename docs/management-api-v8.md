@@ -127,7 +127,7 @@ retain the corresponding business operation's fields.
 `GET /server/version` returns the running build metadata:
 
 ```json
-{"version":"0.0.3","commit":"none","build_date":"unknown","repository":"cgw0801/CLIProxyAPI","started_at":"2026-10-31T06:06:31.1234567Z"}
+{"version":"0.0.4","commit":"none","build_date":"unknown","repository":"cgw0801/CLIProxyAPI","started_at":"2026-10-31T06:06:31.1234567Z"}
 ```
 
 `GET /server/update` compares the running version with the latest GitHub release and returns `current_version`, `latest_version`, `update_available`, `can_update`, and the release URL. If the repository has not published a release yet, the current version is reported as latest.

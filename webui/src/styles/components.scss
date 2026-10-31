@@ -269,8 +269,19 @@ textarea {
   align-items: center;
   justify-content: center;
   padding: 24px;
-  background: rgb(8 10 16 / 0.42);
-  backdrop-filter: blur(8px);
+  background: rgb(8 10 16 / 0.46);
+  backdrop-filter: blur(10px) saturate(135%);
+  opacity: 0;
+  will-change: opacity;
+
+  &.modal-overlay-entering {
+    animation: modal-overlay-in 520ms var(--ease-std) both;
+  }
+
+  &.modal-overlay-closing {
+    pointer-events: none;
+    animation: modal-overlay-out 260ms var(--ease-std) both;
+  }
 }
 
 .modal {
@@ -284,6 +295,30 @@ textarea {
   border-radius: 22px;
   background: var(--floating-surface);
   box-shadow: var(--floating-shadow);
+  opacity: 0;
+  transform-origin: 50% 58%;
+  will-change: transform, opacity;
+
+  &.modal-entering {
+    animation: modal-panel-in 560ms var(--ease) both;
+
+    .modal-header {
+      animation: modal-content-in 480ms var(--ease) 70ms both;
+    }
+
+    .modal-body {
+      animation: modal-content-in 520ms var(--ease) 115ms both;
+    }
+
+    .modal-footer {
+      animation: modal-content-in 460ms var(--ease) 170ms both;
+    }
+  }
+
+  &.modal-closing {
+    pointer-events: none;
+    animation: modal-panel-out 260ms var(--ease-std) both;
+  }
 }
 
 .modal-close-floating {
@@ -302,11 +337,21 @@ textarea {
   background: transparent;
   color: var(--text-tertiary);
   cursor: pointer;
+  transition:
+    color 160ms var(--ease-out-strong),
+    background 160ms var(--ease-out-strong),
+    border-color 160ms var(--ease-out-strong),
+    transform 220ms var(--ease);
 
   &:hover:not(:disabled) {
     border-color: var(--border-color);
     background: var(--bg-tertiary);
     color: var(--text-primary);
+    transform: scale(1.04);
+  }
+
+  &:active:not(:disabled) {
+    transform: scale(0.92);
   }
 }
 
@@ -337,6 +382,62 @@ textarea {
   padding: 16px 24px;
   border-top: 1px solid var(--line-soft);
   background: var(--surface-2);
+}
+
+@keyframes modal-overlay-in {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes modal-overlay-out {
+  from {
+    opacity: 1;
+  }
+
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes modal-panel-in {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 28px, 0) scale(0.95);
+  }
+
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+}
+
+@keyframes modal-panel-out {
+  from {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+
+  to {
+    opacity: 0;
+    transform: translate3d(0, 10px, 0) scale(0.97);
+  }
+}
+
+@keyframes modal-content-in {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 10px, 0);
+  }
+
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
 }
 
 .request-log-modal {
@@ -491,5 +592,35 @@ textarea {
   .empty-state {
     align-items: flex-start;
     flex-direction: column;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .modal-overlay-entering,
+  .modal-overlay-closing,
+  .modal-entering,
+  .modal-closing,
+  .modal-entering .modal-header,
+  .modal-entering .modal-body,
+  .modal-entering .modal-footer {
+    animation: none;
+  }
+
+  .modal-overlay-entering {
+    opacity: 1;
+  }
+
+  .modal-entering {
+    opacity: 1;
+    transform: none;
+  }
+
+  .modal-overlay-closing {
+    opacity: 0;
+  }
+
+  .modal-closing {
+    opacity: 0;
+    transform: translate3d(0, 8px, 0) scale(0.98);
   }
 }

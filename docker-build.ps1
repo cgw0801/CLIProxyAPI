@@ -21,7 +21,7 @@ if ((Get-Content -LiteralPath ".env" -Raw) -notmatch "(?m)^MANAGEMENT_PASSWORD=.
 }
 
 $VERSION = (git describe --tags --abbrev=0 2>$null)
-if (-not $VERSION) { $VERSION = "0.0.3" }
+if (-not $VERSION) { $VERSION = "0.0.4" }
 $VERSION = $VERSION -replace '^[vV]', ''
 $COMMIT = (git rev-parse --short HEAD 2>$null)
 if (-not $COMMIT) { $COMMIT = "none" }

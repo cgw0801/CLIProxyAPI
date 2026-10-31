@@ -16,7 +16,7 @@ if ! grep -Eq '^MANAGEMENT_PASSWORD=.+' .env; then
   echo "Warning: MANAGEMENT_PASSWORD is not set in .env; the management panel will be disabled." >&2
 fi
 
-VERSION="${VERSION:-$(git describe --tags --abbrev=0 2>/dev/null || echo 0.0.3)}"
+VERSION="${VERSION:-$(git describe --tags --abbrev=0 2>/dev/null || echo 0.0.4)}"
 VERSION="${VERSION#v}"
 COMMIT="${COMMIT:-$(git rev-parse --short HEAD 2>/dev/null || echo none)}"
 BUILD_DATE="${BUILD_DATE:-$(date -u +%Y-%m-%dT%H:%M:%SZ)}"
